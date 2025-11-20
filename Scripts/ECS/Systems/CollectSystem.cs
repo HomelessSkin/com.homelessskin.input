@@ -36,6 +36,18 @@ namespace Input
                             Key = key.keyCode,
                             _Type = Input.Data.Type.Down
                         });
+                    else if (key.wasReleasedThisFrame)
+                        Value.ValueRW._Data.Add(new Input.Data
+                        {
+                            Key = key.keyCode,
+                            _Type = Input.Data.Type.Up
+                        });
+                    else if (key.isPressed)
+                        Value.ValueRW._Data.Add(new Input.Data
+                        {
+                            Key = key.keyCode,
+                            _Type = Input.Data.Type.Hold
+                        });
                 }
         }
     }
