@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using Core.Util;
 
 using Unity.Collections;
-using Unity.Entities;
 
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -80,18 +79,6 @@ namespace Input
 
             for (int t = toRemove.Length - 1; t >= 0; t--)
                 Value.ValueRW._Data.RemoveAt(toRemove[t]);
-        }
-    }
-
-    [UpdateInGroup(typeof(InputSystemGroup))]
-    [UpdateAfter(typeof(CollectSystem))]
-    public partial class UISystem : HandleSystem
-    {
-        protected override void OnCreate()
-        {
-            base.OnCreate();
-
-            Group = Controller.GroupTag.UI;
         }
     }
 }
