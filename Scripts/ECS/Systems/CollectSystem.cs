@@ -16,7 +16,7 @@ namespace Input
     }
 
     [UpdateInGroup(typeof(InputSystemGroup))]
-    public partial class InputCollectSystem : ReloadSingletoneSystem<Input>
+    public partial class CollectSystem : ReloadSingletoneSystem<Input>
     {
         protected override void Proceed()
         {
@@ -31,7 +31,11 @@ namespace Input
                         continue;
 
                     if (key.wasPressedThisFrame)
-                        Value.ValueRW._Data.Add(new Input.Data { });
+                        Value.ValueRW._Data.Add(new Input.Data
+                        {
+                            Key = key.keyCode,
+                            _Type = Input.Data.Type.Down
+                        });
                 }
         }
     }
@@ -52,7 +56,16 @@ namespace Input
         [Serializable]
         public struct Data
         {
+            public Key Key;
+            public Type _Type;
 
+            public enum Type : byte
+            {
+                Null = 0,
+                Down = 1,
+                Hold = 2,
+                Up = 3
+            }
         }
     }
 }
