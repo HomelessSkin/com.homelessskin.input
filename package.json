@@ -22,7 +22,7 @@
   "samples": [
     {
       "displayName": "Systems",
-      "path": "Samples/Scripts"
+      "path": "~Samples/Scripts"
     }
   ]
 }
