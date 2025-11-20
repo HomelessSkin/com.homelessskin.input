@@ -1,0 +1,21 @@
+{
+  "name": "com.homelessskin.input",
+  "displayName": "Input",
+  "version": "1.0.0",
+  "description": "input",
+  "author": {
+    "name": "RU_1n",
+    "email": "your@email.com"
+  },
+  "keywords": [
+    "input"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/homelessskin/shared-input.git"
+  },
+  "hideInEditor": false,
+  "dependencies": {
+    "com.unity.entities": "1.3.14"
+  }
+}
