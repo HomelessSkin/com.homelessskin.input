@@ -19,6 +19,7 @@ namespace Input
         [Serializable]
         public class Data
         {
+            public string Name;
             public Key Key;
             public Input.Data.Type Type;
             [Space]
