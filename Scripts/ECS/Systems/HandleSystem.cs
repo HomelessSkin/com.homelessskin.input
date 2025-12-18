@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-using Core.Util;
+using Core;
 
 using Unity.Collections;
 

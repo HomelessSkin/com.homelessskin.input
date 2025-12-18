@@ -1,6 +1,6 @@
 using System;
 
-using Core.Util;
+using Core;
 
 using UnityEngine;
 using UnityEngine.Events;
