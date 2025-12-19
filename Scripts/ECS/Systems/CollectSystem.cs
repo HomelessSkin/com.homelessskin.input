@@ -10,6 +10,7 @@ using UnityEngine.InputSystem;
 namespace Input
 {
     [UpdateInGroup(typeof(InitializationSystemGroup))]
+    [UpdateBefore(typeof(SpawnSystemGroup))]
     public partial class InputSystemGroup : ComponentSystemGroup
     {
 

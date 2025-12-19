@@ -6,6 +6,7 @@ using Core;
 using Unity.Collections;
 
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.InputSystem;
 
 namespace Input
@@ -60,6 +61,7 @@ namespace Input
         }
         protected override void Proceed()
         {
+            var toInvoke = new List<UnityEvent>();
             var toRemove = new NativeList<int>(Allocator.Temp);
             for (int k = 0; k < Value.ValueRO._Data.Length; k++)
             {
@@ -70,7 +72,7 @@ namespace Input
 
                 if (actions[(int)butt._Type] != null)
                 {
-                    actions[(int)butt._Type].Event?.Invoke();
+                    toInvoke.Add(actions[(int)butt._Type].Event);
 
                     if (actions[(int)butt._Type].RemoveInput)
                         toRemove.Add(k);
@@ -79,6 +81,9 @@ namespace Input
 
             for (int t = toRemove.Length - 1; t >= 0; t--)
                 Value.ValueRW._Data.RemoveAt(toRemove[t]);
+
+            for (int t = 0; t < toInvoke.Count; t++)
+                toInvoke[t]?.Invoke();
         }
     }
 }
