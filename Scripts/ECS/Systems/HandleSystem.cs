@@ -7,7 +7,6 @@ using Unity.Collections;
 
 using UnityEngine;
 using UnityEngine.Events;
-using UnityEngine.InputSystem;
 
 namespace Input
 {
@@ -15,10 +14,10 @@ namespace Input
     {
         protected static string RulesPath;
 
-        protected Controller.GroupTag Group;
+        protected string Group;
         protected Controller Controller;
 
-        protected Dictionary<Key, Controller.Data.Action[]> Actions = new Dictionary<Key, Controller.Data.Action[]>();
+        protected Dictionary<int, Controller.Data.Action[]> Actions = new Dictionary<int, Controller.Data.Action[]>();
 
         protected override void OnCreate()
         {
@@ -50,11 +49,16 @@ namespace Input
                     for (int e = 0; e < events.Length; e++)
                     {
                         var data = events[e];
-                        if (!Actions.TryGetValue(data.Key, out var actions))
+                        var key = data.Command &&
+                            data.Command.TryGetReward(out var reward) ?
+                            reward.title.GetHashCode() :
+                            data.Key.ToString().GetHashCode();
+
+                        if (!Actions.TryGetValue(key, out var actions))
                             actions = new Controller.Data.Action[Enum.GetValues(typeof(Input.Data.Type)).Length];
 
                         actions[(int)data.Type] = data._Action;
-                        Actions[data.Key] = actions;
+                        Actions[key] = actions;
                     }
                 }
             }

@@ -10,16 +10,18 @@ namespace Input
 {
     public class Controller : MonoBehaviour
     {
-        [SerializeField] GroupTag Group;
+        [SerializeField] string Group;
+        [Space]
         [SerializeField] Data[] Actions;
 
-        public GroupTag GetGroup() => Group;
+        public string GetGroup() => Group;
         public Data[] GetActions() => Actions;
 
         [Serializable]
         public class Data
         {
             public string Name;
+            public Command Command;
             public Key Key;
             public Input.Data.Type Type;
             [Space]
@@ -34,19 +36,30 @@ namespace Input
             }
         }
 
-        public enum GroupTag : byte
-        {
-            Null = 0,
-            UI = 1,
-            Game = 2,
-
-        }
-
 #if UNITY_EDITOR
-        void Reset()
+        protected virtual void Reset()
         {
             Tool.CreateTag("InputController");
             gameObject.tag = "InputController";
+        }
+        protected virtual void OnValidate()
+        {
+            if (Actions != null)
+                for (int a = 0; a < Actions.Length; a++)
+                {
+                    var action = Actions[a];
+                    var keyStr = "";
+                    if (action.Command &&
+                         action.Command.TryGetReward(out var reward))
+                    {
+                        keyStr = reward.title;
+                        action.Type = Input.Data.Type.Command;
+                    }
+                    else
+                        keyStr = action.Key.ToString();
+
+                    action.Name = $"On {keyStr} {action.Type}";
+                }
         }
 #endif
     }

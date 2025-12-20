@@ -16,7 +16,7 @@ namespace Input
 
     }
 
-    [UpdateInGroup(typeof(InputSystemGroup))]
+    [UpdateInGroup(typeof(InputSystemGroup), OrderFirst = true)]
     public partial class CollectSystem : ReloadSingletoneSystem<Input>
     {
         protected override void Proceed()
@@ -34,19 +34,19 @@ namespace Input
                     if (key.wasPressedThisFrame)
                         Value.ValueRW._Data.Add(new Input.Data
                         {
-                            Key = key.keyCode,
+                            Key = key.keyCode.ToString().GetHashCode(),
                             _Type = Input.Data.Type.Down
                         });
                     else if (key.wasReleasedThisFrame)
                         Value.ValueRW._Data.Add(new Input.Data
                         {
-                            Key = key.keyCode,
+                            Key = key.keyCode.ToString().GetHashCode(),
                             _Type = Input.Data.Type.Up
                         });
                     else if (key.isPressed)
                         Value.ValueRW._Data.Add(new Input.Data
                         {
-                            Key = key.keyCode,
+                            Key = key.keyCode.ToString().GetHashCode(),
                             _Type = Input.Data.Type.Hold
                         });
                 }
@@ -69,7 +69,7 @@ namespace Input
         [Serializable]
         public struct Data
         {
-            public Key Key;
+            public int Key;
             public Type _Type;
 
             public enum Type : byte
@@ -77,7 +77,8 @@ namespace Input
                 Null = 0,
                 Down = 1,
                 Hold = 2,
-                Up = 3
+                Up = 3,
+                Command = 4,
             }
         }
     }
