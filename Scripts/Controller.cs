@@ -20,7 +20,7 @@ namespace Input
         [Serializable]
         public class Data
         {
-            public string Name;
+            [HideInInspector] public string Name;
             public Command Command;
             public Key Key;
             public Input.Data.Type Type;
@@ -32,7 +32,7 @@ namespace Input
             {
                 public bool RemoveInput;
                 [Space]
-                public UnityEvent Event;
+                public UnityEvent<IInteractable.Event, Command> Event;
             }
         }
 

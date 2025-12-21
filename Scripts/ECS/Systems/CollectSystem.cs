@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 using Core;
 
@@ -16,12 +17,21 @@ namespace Input
 
     }
 
-    [UpdateInGroup(typeof(InputSystemGroup), OrderFirst = true)]
-    public partial class CollectSystem : ReloadSingletoneSystem<Input>
+    [UpdateInGroup(typeof(InputSystemGroup))]
+    public partial class CollectSystem : ReloadManagedSingletoneSystem<Input>
     {
+        protected override void GetRef() { }
         protected override void Proceed()
         {
-            Value.ValueRW._Data.Clear();
+            if (Value == null)
+                return;
+
+            var unended = new List<EndEvent>();
+            for (int d = 0; d < Value._Data.Count; d++)
+                if (Value._Data[d]._Type == Input.Data.Type.Command)
+                    unended.Add(new EndEvent { Result = LogLevel.Warning, Event = Value._Data[d].Event });
+
+            Value._Data.Clear();
 
             var keyboard = Keyboard.current;
             if (keyboard != null)
@@ -32,45 +42,59 @@ namespace Input
                         continue;
 
                     if (key.wasPressedThisFrame)
-                        Value.ValueRW._Data.Add(new Input.Data
+                        Value._Data.Add(new Input.Data
                         {
                             Key = key.keyCode.ToString().GetHashCode(),
                             _Type = Input.Data.Type.Down
                         });
                     else if (key.wasReleasedThisFrame)
-                        Value.ValueRW._Data.Add(new Input.Data
+                        Value._Data.Add(new Input.Data
                         {
                             Key = key.keyCode.ToString().GetHashCode(),
                             _Type = Input.Data.Type.Up
                         });
                     else if (key.isPressed)
-                        Value.ValueRW._Data.Add(new Input.Data
+                        Value._Data.Add(new Input.Data
                         {
                             Key = key.keyCode.ToString().GetHashCode(),
                             _Type = Input.Data.Type.Hold
                         });
                 }
+
+            var query = EntityManager.CreateEntityQuery(typeof(IInteractable.Event));
+            if (!query.IsEmpty)
+            {
+                var entities = query.ToEntityArray(Allocator.Temp);
+                for (int e = 0; e < entities.Length; e++)
+                {
+                    var @event = EntityManager.GetComponentObject<IInteractable.Event>(entities[e]);
+
+                    Value._Data.Add(new Input.Data
+                    {
+                        Key = @event.Title.GetHashCode(),
+                        _Type = Input.Data.Type.Command,
+                        Event = @event,
+                    });
+                }
+
+                EntityManager.DestroyEntity(query);
+            }
+
+            for (int u = 0; u < unended.Count; u++)
+                Sys.Add_M(unended[u], EntityManager);
         }
     }
 
-    public struct Input : IDefaultable<Input>
+    public class Input : IComponentData
     {
-        public bool Initialized { get; set; }
-
-        public NativeList<Data> _Data;
-
-        public Input CreateDefault() => new Input
-        {
-            Initialized = true,
-
-            _Data = new NativeList<Data>(Allocator.Persistent)
-        };
+        public List<Data> _Data = new List<Data>();
 
         [Serializable]
-        public struct Data
+        public class Data
         {
             public int Key;
             public Type _Type;
+            public IInteractable.Event Event;
 
             public enum Type : byte
             {
@@ -81,5 +105,11 @@ namespace Input
                 Command = 4,
             }
         }
+    }
+
+    public class EndEvent : IComponentData
+    {
+        public LogLevel Result;
+        public IInteractable.Event Event;
     }
 }
