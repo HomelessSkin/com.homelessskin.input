@@ -17,6 +17,7 @@ namespace Input
         public string GetGroup() => Group;
         public Data[] GetActions() => Actions;
 
+        #region DATA
         [Serializable]
         public class Data
         {
@@ -35,6 +36,7 @@ namespace Input
                 public UnityEvent<IInteractable.Event, Command> Event;
             }
         }
+        #endregion
 
 #if UNITY_EDITOR
         protected virtual void Reset()
@@ -49,9 +51,10 @@ namespace Input
                 {
                     var action = Actions[a];
                     var keyStr = "";
-                    if (action.Command &&
-                         action.Command.TryGetReward(out var reward))
+                    if (action.Command)
                     {
+                        action.Command.TryGetReward(out var reward);
+
                         keyStr = reward.title;
                         action.Type = Input.Data.Type.Command;
                     }

@@ -26,10 +26,10 @@ namespace Input
             if (Value == null)
                 return;
 
-            var unended = new List<EndEvent>();
+            var unended = new List<IInteractable.EndEvent>();
             for (int d = 0; d < Value._Data.Count; d++)
                 if (Value._Data[d]._Type == Input.Data.Type.Command)
-                    unended.Add(new EndEvent { Result = LogLevel.Warning, Event = Value._Data[d].Event });
+                    unended.Add(new IInteractable.EndEvent { Result = LogLevel.Warning, Event = Value._Data[d].Event });
 
             Value._Data.Clear();
 
@@ -85,6 +85,7 @@ namespace Input
         }
     }
 
+    #region INPUT
     public class Input : IComponentData
     {
         public List<Data> _Data = new List<Data>();
@@ -106,10 +107,5 @@ namespace Input
             }
         }
     }
-
-    public class EndEvent : IComponentData
-    {
-        public LogLevel Result;
-        public IInteractable.Event Event;
-    }
+    #endregion
 }

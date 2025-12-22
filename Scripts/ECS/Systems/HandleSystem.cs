@@ -127,13 +127,14 @@ namespace Input
             for (int e = 0; e < toDestroy.Count; e++)
                 EntityManager.DestroyEntity(toDestroy[e]);
         }
-
         protected virtual void AddAction(Controller.Data data)
         {
             var key = 0;
-            if (data.Command &&
-                 data.Command.TryGetReward(out var reward))
+            if (data.Command)
+            {
+                data.Command.TryGetReward(out var reward);
                 key = reward.title.GetHashCode();
+            }
             else
                 key = data.Key.ToString().GetHashCode();
 
@@ -161,6 +162,7 @@ namespace Input
         }
     }
 
+    #region REQUEST
     public class AddActionRequest : IComponentData
     {
         public string Group;
@@ -171,4 +173,5 @@ namespace Input
         public string Group;
         public int Key;
     }
+    #endregion
 }

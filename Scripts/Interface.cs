@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
+using Core;
+
 using Unity.Entities;
 
 namespace Input
@@ -33,6 +35,12 @@ namespace Input
             public string UserInput;
             public string ID;
             public int Points;
+        }
+
+        public class EndEvent : IComponentData
+        {
+            public LogLevel Result;
+            public Event Event;
         }
     }
 }
