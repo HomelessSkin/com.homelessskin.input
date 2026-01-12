@@ -7,10 +7,12 @@ using Unity.Collections;
 using Unity.Entities;
 
 using UnityEngine;
+using UnityEngine.Events;
+using UnityEngine.InputSystem;
 
 namespace Input
 {
-    public abstract partial class HandleSystem : ReloadManagedSingletoneSystem<Input>
+    public abstract partial class HandleSystem : ReloadManagedSingletoneSystem<Perform>
     {
         protected static string RulesPath;
 
@@ -18,19 +20,20 @@ namespace Input
         protected string Group;
         protected Controller Controller;
 
-        protected Dictionary<int, Controller.Data[]> Actions = new Dictionary<int, Controller.Data[]>();
+        protected Dictionary<int, InnerAction[]> InnerActions = new Dictionary<int, InnerAction[]>();
+        protected Dictionary<int, Controller.Data[]> OuterActions = new Dictionary<int, Controller.Data[]>();
 
         protected override void OnCreate()
         {
             base.OnCreate();
 
-            RequireForUpdate<Input>();
+            RequireForUpdate<Perform>();
 
-            ActionDataLength = Enum.GetValues(typeof(Input.Data.Type)).Length;
+            ActionDataLength = Enum.GetValues(typeof(Perform.Data.Type)).Length;
         }
         protected override void OnUpdate()
         {
-            ProcessRequestedActions();
+            ProcessOuterActions();
 
             base.OnUpdate();
         }
@@ -54,45 +57,73 @@ namespace Input
                 {
                     var events = Controller.GetActions();
                     for (int e = 0; e < events.Length; e++)
-                        AddAction(events[e]);
+                        AddOuterAction(events[e]);
                 }
             }
         }
         protected override void Proceed()
         {
             var toRemove = new List<int>();
-            var toInvoke = new List<(Controller.Data, Input.Data)>();
 
-            for (int k = 0; k < Value._Data.Count; k++)
+            var innerActions = new List<UnityAction>();
+            var outerActions = new List<(Controller.Data, Perform.Data)>();
+
+            for (int v = 0; v < Value._Data.Count; v++)
             {
-                var input = Value._Data[k];
-                if (!Actions.TryGetValue(input.Key, out var actions))
-                    continue;
+                var input = Value._Data[v];
 
-                if (actions[(int)input._Type] != null)
+                if (InnerActions.TryGetValue(input.Key, out var inner))
                 {
-                    toInvoke.Add((actions[(int)input._Type], input));
+                    var action = inner[(int)input._Type];
+                    if (action != null)
+                    {
+                        innerActions.Add(action.Action);
 
-                    if (actions[(int)input._Type]._Action.RemoveInput)
-                        toRemove.Add(k);
+                        if (!action.RemoveInput)
+                            toRemove.Add(v);
+                    }
+                }
+
+                if (OuterActions.TryGetValue(input.Key, out var outer))
+                {
+                    var action = outer[(int)input._Type];
+                    if (action != null)
+                    {
+                        outerActions.Add((action, input));
+
+                        if (action._Action.RemoveInput)
+                            toRemove.Add(v);
+                    }
                 }
             }
 
             for (int t = toRemove.Count - 1; t >= 0; t--)
                 Value._Data.RemoveAt(toRemove[t]);
 
-            for (int t = 0; t < toInvoke.Count; t++)
+            for (int i = 0; i < innerActions.Count; i++)
+                innerActions[i].Invoke();
+
+            for (int o = 0; o < outerActions.Count; o++)
             {
-                var tI = toInvoke[t];
+                var @event = outerActions[o];
 
-                if (tI.Item1.Command)
-                    tI.Item1.Command.TryGetReward(out var r);
+                if (@event.Item1.Command)
+                    @event.Item1.Command.TryGetReward(out var r);
 
-                tI.Item1._Action.Event?.Invoke(tI.Item2.Event, tI.Item1.Command);
+                @event.Item1._Action.Event?.Invoke(@event.Item2.Event, @event.Item1.Command);
             }
         }
 
-        protected virtual void ProcessRequestedActions()
+        protected virtual void AddInnerAction(Key button, Perform.Data.Type type, bool removeInput, UnityAction action)
+        {
+            var key = button.ToString().GetHashCode();
+            if (!InnerActions.TryGetValue(key, out var actions))
+                actions = new InnerAction[ActionDataLength];
+
+            actions[(int)type] = new InnerAction { Key = button, Type = type, RemoveInput = removeInput, Action = action };
+            InnerActions[key] = actions;
+        }
+        protected virtual void ProcessOuterActions()
         {
             var added = EntityManager.CreateEntityQuery(typeof(AddActionRequest));
             var removed = EntityManager.CreateEntityQuery(typeof(RemoveActionRequest));
@@ -105,7 +136,7 @@ namespace Input
                 var request = EntityManager.GetComponentObject<AddActionRequest>(entity);
                 if (Group == request.Group)
                 {
-                    AddAction(request.Data);
+                    AddOuterAction(request.Data);
 
                     toDestroy.Add(entity);
                 }
@@ -118,7 +149,7 @@ namespace Input
                 var request = EntityManager.GetComponentObject<RemoveActionRequest>(entity);
                 if (Group == request.Group)
                 {
-                    RemoveAction(request.Key);
+                    RemoveOuterAction(request.Key);
 
                     toDestroy.Add(entity);
                 }
@@ -127,7 +158,7 @@ namespace Input
             for (int e = 0; e < toDestroy.Count; e++)
                 EntityManager.DestroyEntity(toDestroy[e]);
         }
-        protected virtual void AddAction(Controller.Data data)
+        protected virtual void AddOuterAction(Controller.Data data)
         {
             var key = 0;
             if (data.Command)
@@ -138,8 +169,7 @@ namespace Input
             else
                 key = data.Key.ToString().GetHashCode();
 
-
-            if (!Actions.TryGetValue(key, out var actions))
+            if (!OuterActions.TryGetValue(key, out var actions))
                 actions = new Controller.Data[ActionDataLength];
 
             var index = (int)data.Type;
@@ -147,19 +177,30 @@ namespace Input
                 actions[index]._Action.Event?.RemoveAllListeners();
 
             actions[index] = data;
-            Actions[key] = actions;
+            OuterActions[key] = actions;
         }
-        protected virtual void RemoveAction(int key)
+        protected virtual void RemoveOuterAction(int key)
         {
-            if (Actions.TryGetValue(key, out var data))
+            if (OuterActions.TryGetValue(key, out var data))
             {
                 for (int d = 0; d < ActionDataLength; d++)
                     if (data[d] != null)
                         data[d]._Action.Event?.RemoveAllListeners();
 
-                Actions.Remove(key);
+                OuterActions.Remove(key);
             }
         }
+
+        #region INNER ACTION
+        protected class InnerAction
+        {
+            public Key Key;
+            public Perform.Data.Type Type;
+            [Space]
+            public bool RemoveInput;
+            public UnityAction Action;
+        }
+        #endregion
     }
 
     #region REQUEST

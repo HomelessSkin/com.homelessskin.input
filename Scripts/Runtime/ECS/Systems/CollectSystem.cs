@@ -18,7 +18,7 @@ namespace Input
     }
 
     [UpdateInGroup(typeof(InputSystemGroup))]
-    public partial class CollectSystem : ReloadManagedSingletoneSystem<Input>
+    public partial class CollectSystem : ReloadManagedSingletoneSystem<Perform>
     {
         protected override void GetRef() { }
         protected override void Proceed()
@@ -28,7 +28,7 @@ namespace Input
 
             var unended = new List<IInteractable.EndEvent>();
             for (int d = 0; d < Value._Data.Count; d++)
-                if (Value._Data[d]._Type == Input.Data.Type.Command)
+                if (Value._Data[d]._Type == Perform.Data.Type.Command)
                     unended.Add(new IInteractable.EndEvent { Result = LogLevel.Warning, Event = Value._Data[d].Event });
 
             Value._Data.Clear();
@@ -42,22 +42,22 @@ namespace Input
                         continue;
 
                     if (key.wasPressedThisFrame)
-                        Value._Data.Add(new Input.Data
+                        Value._Data.Add(new Perform.Data
                         {
                             Key = key.keyCode.ToString().GetHashCode(),
-                            _Type = Input.Data.Type.Down
+                            _Type = Perform.Data.Type.Down
                         });
                     else if (key.wasReleasedThisFrame)
-                        Value._Data.Add(new Input.Data
+                        Value._Data.Add(new Perform.Data
                         {
                             Key = key.keyCode.ToString().GetHashCode(),
-                            _Type = Input.Data.Type.Up
+                            _Type = Perform.Data.Type.Up
                         });
                     else if (key.isPressed)
-                        Value._Data.Add(new Input.Data
+                        Value._Data.Add(new Perform.Data
                         {
                             Key = key.keyCode.ToString().GetHashCode(),
-                            _Type = Input.Data.Type.Hold
+                            _Type = Perform.Data.Type.Hold
                         });
                 }
 
@@ -69,10 +69,10 @@ namespace Input
                 {
                     var @event = EntityManager.GetComponentObject<IInteractable.Event>(entities[e]);
 
-                    Value._Data.Add(new Input.Data
+                    Value._Data.Add(new Perform.Data
                     {
                         Key = @event.Title.GetHashCode(),
-                        _Type = Input.Data.Type.Command,
+                        _Type = Perform.Data.Type.Command,
                         Event = @event,
                     });
                 }
@@ -86,7 +86,7 @@ namespace Input
     }
 
     #region INPUT
-    public class Input : IComponentData
+    public class Perform : IComponentData
     {
         public List<Data> _Data = new List<Data>();
 

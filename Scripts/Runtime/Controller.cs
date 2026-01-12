@@ -24,7 +24,7 @@ namespace Input
             [HideInInspector] public string Name;
             public Command Command;
             public Key Key;
-            public Input.Data.Type Type;
+            public Perform.Data.Type Type;
             [Space]
             public Action _Action;
 
@@ -56,7 +56,7 @@ namespace Input
                         action.Command.TryGetReward(out var reward);
 
                         keyStr = reward.title;
-                        action.Type = Input.Data.Type.Command;
+                        action.Type = Perform.Data.Type.Command;
                     }
                     else
                         keyStr = action.Key.ToString();
