@@ -10,13 +10,6 @@ using UnityEngine.InputSystem;
 
 namespace Input
 {
-    [UpdateInGroup(typeof(InitializationSystemGroup))]
-    [UpdateBefore(typeof(SpawnSystemGroup))]
-    public partial class InputSystemGroup : ComponentSystemGroup
-    {
-
-    }
-
     [UpdateInGroup(typeof(InputSystemGroup))]
     public partial class CollectSystem : ReloadManagedSingletoneSystem<Perform>
     {
