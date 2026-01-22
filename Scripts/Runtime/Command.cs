@@ -1,20 +1,21 @@
 using System;
 
+using Core;
+
 using UnityEngine;
 
 namespace Input
 {
-    public class Command : MonoBehaviour
+    public class Command : Personality
     {
-#if UNITY_EDITOR
-        [SerializeField] bool SkipValidation;
-#endif
         [SerializeField] bool SkipCreation;
         [SerializeField] bool SkipRemovingOnDestroy;
         [SerializeField] Reward Reward;
 
         int Calls = 0;
         int Index;
+
+        public override int GetID() => string.IsNullOrEmpty(Reward.title) ? -1 : Reward.title.GetHashCode();
 
         public void AddCall(int index)
         {
@@ -28,7 +29,6 @@ namespace Input
 
             return Calls;
         }
-
         public bool TryGetReward(out Reward reward, bool onInit = true)
         {
             reward = Reward;
@@ -37,6 +37,9 @@ namespace Input
         }
 
 #if UNITY_EDITOR
+        [Space]
+        [SerializeField] bool SkipValidation;
+
         void OnValidate()
         {
             if (Reward == null)
