@@ -31,6 +31,7 @@ namespace Input
             public string Platform;
             public string Title;
             public string Nick;
+            public string NickColor;
             public string RewardID;
             public string UserInput;
             public string ID;
