@@ -22,9 +22,10 @@ namespace Input
         public class Data
         {
             [HideInInspector] public string Name;
-            public Command Command;
             public Key Key;
             public Perform.Data.Type Type;
+            public string Title;
+            public Command Command;
             [Space]
             public Action _Action;
 
@@ -33,7 +34,7 @@ namespace Input
             {
                 public bool RemoveInput;
                 [Space]
-                public UnityEvent<IInteractable.Event, Command> Event;
+                public UnityEvent<OuterInput, Command> Event;
             }
         }
         #endregion
@@ -51,17 +52,23 @@ namespace Input
                 {
                     var action = Actions[a];
                     var keyStr = "";
-                    if (action.Command)
+
+                    if (action.Key != Key.None)
+                        keyStr = action.Key.ToString();
+                    else if (!string.IsNullOrEmpty(action.Title))
+                    {
+                        keyStr = action.Title;
+                        action.Type = Perform.Data.Type.Outer;
+                    }
+                    else if (action.Command)
                     {
                         action.Command.TryGetReward(out var reward);
 
                         keyStr = reward.title;
-                        action.Type = Perform.Data.Type.Command;
+                        action.Type = Perform.Data.Type.Outer;
                     }
-                    else
-                        keyStr = action.Key.ToString();
 
-                    action.Name = $"On {keyStr} {action.Type}";
+                    action.Name = $"On {action.Type} {keyStr}";
                 }
         }
 #endif

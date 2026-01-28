@@ -105,12 +105,12 @@ namespace Input
 
             for (int o = 0; o < outerActions.Count; o++)
             {
-                var @event = outerActions[o];
+                var action = outerActions[o];
 
-                if (@event.Item1.Command)
-                    @event.Item1.Command.TryGetReward(out var r);
+                if (action.Item1.Command)
+                    action.Item1.Command.TryGetReward(out var r);
 
-                @event.Item1._Action.Event?.Invoke(@event.Item2.Event, @event.Item1.Command);
+                action.Item1._Action.Event?.Invoke(action.Item2.Input, action.Item1.Command);
             }
         }
 

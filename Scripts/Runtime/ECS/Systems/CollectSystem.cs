@@ -19,10 +19,10 @@ namespace Input
             if (Value == null)
                 return;
 
-            var unended = new List<IInteractable.EndEvent>();
+            var unended = new List<OuterInput.End>();
             for (int d = 0; d < Value._Data.Count; d++)
-                if (Value._Data[d]._Type == Perform.Data.Type.Command)
-                    unended.Add(new IInteractable.EndEvent { Result = LogLevel.Warning, Event = Value._Data[d].Event });
+                if (Value._Data[d]._Type == Perform.Data.Type.Outer)
+                    unended.Add(new OuterInput.End { Result = LogLevel.Warning, Input = Value._Data[d].Input });
 
             Value._Data.Clear();
 
@@ -54,19 +54,19 @@ namespace Input
                         });
                 }
 
-            var query = EntityManager.CreateEntityQuery(typeof(IInteractable.Event));
+            var query = EntityManager.CreateEntityQuery(typeof(OuterInput));
             if (!query.IsEmpty)
             {
                 var entities = query.ToEntityArray(Allocator.Temp);
                 for (int e = 0; e < entities.Length; e++)
                 {
-                    var @event = EntityManager.GetComponentObject<IInteractable.Event>(entities[e]);
+                    var input = EntityManager.GetComponentObject<OuterInput>(entities[e]);
 
                     Value._Data.Add(new Perform.Data
                     {
-                        Key = @event.Title.GetHashCode(),
-                        _Type = Perform.Data.Type.Command,
-                        Event = @event,
+                        Key = input.Title.GetHashCode(),
+                        _Type = Perform.Data.Type.Outer,
+                        Input = input,
                     });
                 }
 
@@ -88,7 +88,7 @@ namespace Input
         {
             public int Key;
             public Type _Type;
-            public IInteractable.Event Event;
+            public OuterInput Input;
 
             public enum Type : byte
             {
@@ -96,7 +96,7 @@ namespace Input
                 Down = 1,
                 Hold = 2,
                 Up = 3,
-                Command = 4,
+                Outer = 4,
             }
         }
     }
