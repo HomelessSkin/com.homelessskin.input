@@ -160,15 +160,10 @@ namespace Input
         }
         protected virtual void AddOuterAction(Controller.Data data)
         {
-            var key = 0;
-            if (data.Command)
-            {
-                data.Command.TryGetReward(out var reward);
-                key = reward.title.GetHashCode();
-            }
-            else
-                key = data.Key.ToString().GetHashCode();
+            if (string.IsNullOrEmpty(data.Title))
+                return;
 
+            var key = data.Title.GetHashCode();
             if (!OuterActions.TryGetValue(key, out var actions))
                 actions = new Controller.Data[ActionDataLength];
 

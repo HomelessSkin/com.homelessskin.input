@@ -14,7 +14,21 @@ namespace Input
         }
         protected override void Proceed()
         {
-            EntityManager.DestroyEntity(EntityManager.CreateEntityQuery(typeof(OuterInput.End)));
+            var query = EntityManager.CreateEntityQuery(typeof(OuterInput.End));
+
+            var ends = query.ToComponentDataArray<OuterInput.End>();
+            for (int e = 0; e < ends.Length; e++)
+            {
+                var end = ends[e];
+                switch (end.Result)
+                {
+                    case LogLevel.Warning:
+                    Log.Warning(this, $"{end.Input.Title} Event was not ended correctly!");
+                    break;
+                }
+            }
+
+            EntityManager.DestroyEntity(query);
         }
     }
 }

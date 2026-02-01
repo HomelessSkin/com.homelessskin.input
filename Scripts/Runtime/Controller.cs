@@ -51,24 +51,19 @@ namespace Input
                 for (int a = 0; a < Actions.Length; a++)
                 {
                     var action = Actions[a];
-                    var keyStr = "";
 
-                    if (action.Key != Key.None)
-                        keyStr = action.Key.ToString();
-                    else if (!string.IsNullOrEmpty(action.Title))
-                    {
-                        keyStr = action.Title;
+                    if (!string.IsNullOrEmpty(action.Title))
                         action.Type = Perform.Data.Type.Outer;
-                    }
                     else if (action.Command)
                     {
-                        action.Command.TryGetReward(out var reward);
-
-                        keyStr = reward.title;
                         action.Type = Perform.Data.Type.Outer;
+                        action.Command.TryGetReward(out var reward);
+                        action.Title = reward.title;
                     }
+                    else if (action.Key != Key.None)
+                        action.Title = action.Key.ToString();
 
-                    action.Name = $"On {action.Type} {keyStr}";
+                    action.Name = $"On {action.Type} {action.Title}";
                 }
         }
 #endif
