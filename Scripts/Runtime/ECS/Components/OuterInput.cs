@@ -20,24 +20,18 @@ namespace Input
         public int Points;
 
         public bool IsSlashMe;
-        public List<Badge> Badges;
+        public List<Icon> Badges;
         public List<Part> UserInput;
 
         public class Part
         {
             public Text Message;
-            public Smile Emote;
+            public Icon Emote;
             public Mention Reply;
 
             public class Text
             {
                 public string Content;
-            }
-
-            public class Smile
-            {
-                public int Hash;
-                public string URL;
             }
 
             public class Mention
@@ -46,12 +40,9 @@ namespace Input
             }
         }
 
-        public class Badge
+        public class Icon
         {
-            public int Hash;
-            public string SetID;
-            public string ID;
-            public string URL;
+            public int Index;
         }
 
         public class End : IComponentData
