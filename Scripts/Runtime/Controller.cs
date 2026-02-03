@@ -52,7 +52,9 @@ namespace Input
                 {
                     var action = Actions[a];
 
-                    if (!string.IsNullOrEmpty(action.Title))
+                    if (action.Key != Key.None)
+                        action.Title = action.Key.ToString();
+                    else if (!string.IsNullOrEmpty(action.Title))
                         action.Type = Perform.Data.Type.Outer;
                     else if (action.Command)
                     {
@@ -60,8 +62,6 @@ namespace Input
                         action.Command.TryGetReward(out var reward);
                         action.Title = reward.title;
                     }
-                    else if (action.Key != Key.None)
-                        action.Title = action.Key.ToString();
 
                     action.Name = $"On {action.Type} {action.Title}";
                 }
