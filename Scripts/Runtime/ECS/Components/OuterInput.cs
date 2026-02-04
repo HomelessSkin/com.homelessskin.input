@@ -42,6 +42,7 @@ namespace Input
 
         public class Icon
         {
+            public int Hash;
             public int Index;
         }
 
