@@ -13,6 +13,7 @@ namespace Input
         public string Title;
         public string ID;
 
+        public string UserID;
         public string Nick;
         public string NickColor;
 
