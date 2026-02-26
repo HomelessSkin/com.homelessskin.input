@@ -78,7 +78,7 @@ namespace Input
         }
     }
 
-    #region INPUT
+    #region PERFORM
     public class Perform : IComponentData
     {
         public List<Data> _Data = new List<Data>();

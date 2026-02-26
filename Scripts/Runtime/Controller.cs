@@ -11,9 +11,22 @@ namespace Input
     public class Controller : MonoBehaviour
     {
         [SerializeField] string Group;
+        [SerializeField] bool InitialPointer;
+        [SerializeField] PointerSettings PointerSettings;
         [Space]
         [SerializeField] Data[] Actions;
 
+        protected virtual void Start()
+        {
+            if (InitialPointer)
+                InitPointer();
+        }
+
+        public void InitPointer()
+        {
+            if (PointerSettings)
+                PointerSystem.Init(PointerSettings);
+        }
         public string GetGroup() => Group;
         public Data[] GetActions() => Actions;
 

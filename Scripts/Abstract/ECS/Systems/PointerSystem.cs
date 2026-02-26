@@ -2,14 +2,18 @@ using Core;
 
 using Unity.Collections;
 using Unity.Entities;
+using Unity.Physics;
 
 using UnityEngine;
 using UnityEngine.InputSystem;
 
 namespace Input
 {
-    public abstract partial class PointerSystem : BehaviourSystem
+    public abstract partial class PointerSystem : ReloadUnManagedSingletoneSystem<PhysicsWorldSingleton>
     {
+        public static void Init(PointerSettings settings) => Settings = settings;
+        protected static PointerSettings Settings;
+
         protected MouseState Now;
         protected MouseState Prev;
 
@@ -18,31 +22,35 @@ namespace Input
 
         protected Vector2 MDelta { get { return MCurrent - MFrom; } }
 
-        protected Camera PlayerCamera;
+        float T;
 
-        protected override void GetRef()
-        {
-            if (!PlayerCamera)
-            {
-                var go = GameObject.FindGameObjectWithTag("MainCamera");
-                if (go)
-                    PlayerCamera = go.GetComponent<Camera>();
-            }
-        }
+        /// <summary>
+        /// Conflicted SetState Method Calls
+        /// </summary>
         protected override void OnUpdate()
         {
             var query = SystemAPI.QueryBuilder().WithAll<SetPointerStateRequest>().Build();
+            if (!query.IsEmpty)
             {
                 var requests = query.ToComponentDataArray<SetPointerStateRequest>(Allocator.Temp);
                 for (int r = 0; r < requests.Length; r++)
                     SetState(requests[r].State);
+
+                EntityManager.DestroyEntity(query);
             }
-            EntityManager.DestroyEntity(query);
 
             base.OnUpdate();
         }
         protected override void Proceed()
         {
+            if (!Settings)
+                return;
+
+            T += SystemAPI.Time.DeltaTime;
+            if (T < Settings.Freequency)
+                return;
+            T = 0f;
+
             MFrom = MCurrent;
             var mouse = Mouse.current;
             MCurrent = mouse.position.ReadValue();
@@ -51,35 +59,49 @@ namespace Input
             {
                 case MouseState.UI:
                 {
+                    UIAction();
+
                     SetState(MouseState.Up);
                 }
                 break;
                 case MouseState.Up:
                 {
                     if (mouse.leftButton.isPressed)
+                    {
+                        ClickAction();
+
                         SetState(MouseState.Down);
+                    }
+                    else if (MDelta.magnitude > 0.001f)
+                        UpSlideAction();
                     else
-                        PerformUpAction();
+                        UpAction();
                 }
                 break;
                 case MouseState.Down:
                 {
                     if (!mouse.leftButton.isPressed)
+                    {
+                        ReleaseAction();
+
                         SetState(MouseState.Up);
-                    else if ((mouse.position.ReadValue() - MFrom).magnitude > 0.001f)
+                    }
+                    else if (MDelta.magnitude > 0.001f)
                         SetState(MouseState.Slide);
-                    else
-                        PerformClickAction();
                 }
                 break;
                 case MouseState.Slide:
                 {
                     if (!mouse.leftButton.isPressed)
+                    {
+                        ReleaseAction();
+
                         SetState(MouseState.Up);
-                    else if ((MCurrent - MFrom).magnitude <= 0.001f)
+                    }
+                    else if (MDelta.magnitude <= 0.001f)
                         SetState(MouseState.Down);
                     else
-                        PerformSlideAction();
+                        DownSlideAction();
                 }
                 break;
             }
@@ -87,23 +109,38 @@ namespace Input
 
         protected virtual void SetState(MouseState state)
         {
-            switch (state)
-            {
-                case MouseState.Down:
-                break;
-            }
-
             Prev = Now;
             Now = state;
         }
-        protected virtual void PerformClickAction()
+        protected virtual void UIAction()
         {
+            if (Settings.LogActions)
+                Log.Info(this, "UI");
         }
-        protected virtual void PerformSlideAction()
+        protected virtual void UpAction()
         {
+            if (Settings.LogActions)
+                Log.Info(this, "Up");
         }
-        protected virtual void PerformUpAction()
+        protected virtual void ClickAction()
         {
+            if (Settings.LogActions)
+                Log.Info(this, "Click");
+        }
+        protected virtual void ReleaseAction()
+        {
+            if (Settings.LogActions)
+                Log.Info(this, "Release");
+        }
+        protected virtual void UpSlideAction()
+        {
+            if (Settings.LogActions)
+                Log.Info(this, "UpSlide");
+        }
+        protected virtual void DownSlideAction()
+        {
+            if (Settings.LogActions)
+                Log.Info(this, "DownSlide");
         }
     }
 
