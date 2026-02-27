@@ -11,7 +11,7 @@ using UnityEngine.InputSystem;
 namespace Input
 {
     [UpdateInGroup(typeof(InputSystemGroup))]
-    public partial class CollectSystem : ReloadManagedSingletoneSystem<Perform>
+    public partial class CollectSystem : ManagedSingletonSystem<Perform>
     {
         protected override void GetRef() { }
         protected override void Proceed()

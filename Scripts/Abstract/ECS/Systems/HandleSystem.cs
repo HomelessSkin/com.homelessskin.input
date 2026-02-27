@@ -12,7 +12,7 @@ using UnityEngine.InputSystem;
 
 namespace Input
 {
-    public abstract partial class HandleSystem : ReloadManagedSingletoneSystem<Perform>
+    public abstract partial class HandleSystem : ManagedSingletonSystem<Perform>
     {
         protected static string RulesPath;
 

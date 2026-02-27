@@ -9,7 +9,7 @@ using UnityEngine.InputSystem;
 
 namespace Input
 {
-    public abstract partial class PointerSystem : ReloadUnManagedSingletoneSystem<PhysicsWorldSingleton>
+    public abstract partial class PointerSystem : UnmanagedSingletonSystem<PhysicsWorldSingleton>
     {
         public static void Init(PointerSettings settings) => Settings = settings;
         protected static PointerSettings Settings;
