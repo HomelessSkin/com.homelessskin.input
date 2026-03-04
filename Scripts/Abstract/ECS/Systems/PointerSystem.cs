@@ -19,11 +19,22 @@ namespace Input
 
         protected Vector2 MFrom;
         protected Vector2 MCurrent;
+        protected Vector2 MScroll;
 
         protected Vector2 MDelta { get { return MCurrent - MFrom; } }
 
         float T;
+        protected Camera PlayerCamera;
 
+        protected override void GetRef()
+        {
+            if (!PlayerCamera)
+            {
+                var go = GameObject.FindGameObjectWithTag("MainCamera");
+                if (go)
+                    PlayerCamera = go.GetComponent<Camera>();
+            }
+        }
         /// <summary>
         /// Conflicted SetState Method Calls
         /// </summary>
@@ -43,8 +54,16 @@ namespace Input
         }
         protected override void Proceed()
         {
-            if (!Settings)
-                return;
+            if (Settings.LogActivity)
+                Log.Info(this, "Is Active");
+
+            var mouse = Mouse.current;
+
+            MScroll = mouse.scroll.ReadValue();
+            if (MScroll.y > 0f)
+                UpScrollAction();
+            else if (MScroll.y < 0f)
+                DownScrollAction();
 
             T += SystemAPI.Time.DeltaTime;
             if (T < Settings.Freequency)
@@ -52,7 +71,6 @@ namespace Input
             T = 0f;
 
             MFrom = MCurrent;
-            var mouse = Mouse.current;
             MCurrent = mouse.position.ReadValue();
 
             switch (Now)
@@ -141,6 +159,16 @@ namespace Input
         {
             if (Settings.LogActions)
                 Log.Info(this, "DownSlide");
+        }
+        protected virtual void UpScrollAction()
+        {
+            if (Settings.LogActions)
+                Log.Info(this, "UpScroll");
+        }
+        protected virtual void DownScrollAction()
+        {
+            if (Settings.LogActions)
+                Log.Info(this, "DownScroll");
         }
     }
 
