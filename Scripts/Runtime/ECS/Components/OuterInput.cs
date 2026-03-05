@@ -19,6 +19,7 @@ namespace Input
 
         public string RewardID;
         public int Points;
+        public int Index;
 
         public bool IsSlashMe;
         public List<Icon> Badges;

@@ -11,6 +11,7 @@ namespace Input
 {
     public abstract partial class PointerSystem : UnmanagedSingletonSystem<PhysicsWorldSingleton>
     {
+        public static Vector2 Current;
         public static void Init(PointerSettings settings) => Settings = settings;
         protected static PointerSettings Settings;
 
@@ -21,10 +22,12 @@ namespace Input
         protected Vector2 MCurrent;
         protected Vector2 MScroll;
 
+        protected Camera PlayerCamera;
+
         protected Vector2 MDelta { get { return MCurrent - MFrom; } }
 
+        bool IsPressed;
         float T;
-        protected Camera PlayerCamera;
 
         protected override void GetRef()
         {
@@ -59,6 +62,11 @@ namespace Input
 
             var mouse = Mouse.current;
 
+            if (mouse.leftButton.wasPressedThisFrame)
+                IsPressed = true;
+            if (mouse.leftButton.wasReleasedThisFrame)
+                IsPressed = false;
+
             MScroll = mouse.scroll.ReadValue();
             if (MScroll.y > 0f)
                 UpScrollAction();
@@ -71,7 +79,7 @@ namespace Input
             T = 0f;
 
             MFrom = MCurrent;
-            MCurrent = mouse.position.ReadValue();
+            Current = MCurrent = mouse.position.ReadValue();
 
             switch (Now)
             {
@@ -79,12 +87,14 @@ namespace Input
                 {
                     UIAction();
 
+                    IsPressed = false;
+
                     SetState(MouseState.Up);
                 }
                 break;
                 case MouseState.Up:
                 {
-                    if (mouse.leftButton.isPressed)
+                    if (IsPressed)
                     {
                         ClickAction();
 
@@ -98,7 +108,7 @@ namespace Input
                 break;
                 case MouseState.Down:
                 {
-                    if (!mouse.leftButton.isPressed)
+                    if (!IsPressed)
                     {
                         ReleaseAction();
 
@@ -110,7 +120,7 @@ namespace Input
                 break;
                 case MouseState.Slide:
                 {
-                    if (!mouse.leftButton.isPressed)
+                    if (!IsPressed)
                     {
                         ReleaseAction();
 
@@ -129,6 +139,9 @@ namespace Input
         {
             Prev = Now;
             Now = state;
+
+            if (Settings.LogStates)
+                Log.Info(this, $"{state}");
         }
         protected virtual void UIAction()
         {
