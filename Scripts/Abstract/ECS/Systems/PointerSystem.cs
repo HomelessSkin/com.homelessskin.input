@@ -11,20 +11,19 @@ namespace Input
 {
     public abstract partial class PointerSystem : UnmanagedSingletonSystem<PhysicsWorldSingleton>
     {
-        public static Vector2 Current;
+        public static Vector2 Current { get; private set; }
+        public static Vector2 From { get; private set; }
+        public static Vector2 Delta { get { return Current - From; } }
+
         public static void Init(PointerSettings settings) => Settings = settings;
         protected static PointerSettings Settings;
 
         protected MouseState Now;
         protected MouseState Prev;
 
-        protected Vector2 MFrom;
-        protected Vector2 MCurrent;
         protected Vector2 MScroll;
 
         protected Camera PlayerCamera;
-
-        protected Vector2 MDelta { get { return MCurrent - MFrom; } }
 
         bool IsPressed;
         float T;
@@ -78,8 +77,8 @@ namespace Input
                 return;
             T = 0f;
 
-            MFrom = MCurrent;
-            Current = MCurrent = mouse.position.ReadValue();
+            From = Current;
+            Current = mouse.position.ReadValue();
 
             switch (Now)
             {
@@ -100,7 +99,7 @@ namespace Input
 
                         SetState(MouseState.Down);
                     }
-                    else if (MDelta.magnitude > 0.001f)
+                    else if (Delta.magnitude > 0.001f)
                         UpSlideAction();
                     else
                         UpAction();
@@ -114,7 +113,7 @@ namespace Input
 
                         SetState(MouseState.Up);
                     }
-                    else if (MDelta.magnitude > 0.001f)
+                    else if (Delta.magnitude > 0.001f)
                         SetState(MouseState.Slide);
                 }
                 break;
@@ -126,7 +125,7 @@ namespace Input
 
                         SetState(MouseState.Up);
                     }
-                    else if (MDelta.magnitude <= 0.001f)
+                    else if (Delta.magnitude <= 0.001f)
                         SetState(MouseState.Down);
                     else
                         DownSlideAction();
