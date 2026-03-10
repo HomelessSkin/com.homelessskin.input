@@ -1,7 +1,7 @@
 {
   "name": "com.homelessskin.input",
   "displayName": "Input",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "A framework with extensions for Unity \"New Input System\".",
   "author": {
     "name": "RU_1n",
