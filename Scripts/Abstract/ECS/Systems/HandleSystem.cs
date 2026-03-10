@@ -107,10 +107,7 @@ namespace Input
             {
                 var action = outerActions[o];
 
-                if (action.Item1.Command)
-                    action.Item1.Command.TryGetReward(out var r);
-
-                action.Item1._Action.Event?.Invoke(action.Item2.Input, action.Item1.Command);
+                action.Item1._Action.Event?.Invoke(action.Item2.Input);
             }
         }
 

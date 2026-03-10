@@ -38,7 +38,6 @@ namespace Input
             public Key Key;
             public Perform.Data.Type Type;
             public string Title;
-            public Command Command;
             [Space]
             public Action _Action;
 
@@ -47,7 +46,7 @@ namespace Input
             {
                 public bool RemoveInput;
                 [Space]
-                public UnityEvent<OuterInput, Command> Event;
+                public UnityEvent<OuterInput> Event;
             }
         }
         #endregion
@@ -69,12 +68,6 @@ namespace Input
                         action.Title = action.Key.ToString();
                     else if (!string.IsNullOrEmpty(action.Title))
                         action.Type = Perform.Data.Type.Outer;
-                    else if (action.Command)
-                    {
-                        action.Type = Perform.Data.Type.Outer;
-                        action.Command.TryGetReward(out var reward);
-                        action.Title = reward.title;
-                    }
 
                     action.Name = $"On {action.Type} {action.Title}";
                 }
