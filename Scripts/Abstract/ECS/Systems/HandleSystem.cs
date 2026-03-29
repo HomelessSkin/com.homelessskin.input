@@ -17,7 +17,6 @@ namespace Input
         protected static string RulesPath;
 
         protected int ActionDataLength;
-        protected string Group;
         protected Controller Controller;
 
         protected Dictionary<int, InnerAction[]> InnerActions = new Dictionary<int, InnerAction[]>();
