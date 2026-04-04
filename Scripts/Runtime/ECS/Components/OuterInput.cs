@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 using Core;
@@ -6,6 +7,7 @@ using Unity.Entities;
 
 namespace Input
 {
+    [Serializable]
     public class OuterInput : IComponentData
     {
         public string Platform;
