@@ -27,23 +27,27 @@ namespace Input
         public List<Icon> Badges;
         public List<Part> UserInput;
 
+        [Serializable]
         public class Part
         {
             public Text Message;
             public Icon Emote;
             public Mention Reply;
 
+            [Serializable]
             public class Text
             {
                 public string Content;
             }
 
+            [Serializable]
             public class Mention
             {
                 public string Nick;
             }
         }
 
+        [Serializable]
         public class Icon
         {
             public int Hash;
