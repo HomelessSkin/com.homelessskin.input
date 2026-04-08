@@ -2,6 +2,8 @@ using System;
 
 using Core;
 
+using Unity.Entities;
+
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.InputSystem;
@@ -16,8 +18,12 @@ namespace Input
         [Space]
         [SerializeField] Data[] Actions;
 
+        protected EntityManager EntityManager;
+
         protected virtual void Start()
         {
+            EntityManager = World.DefaultGameObjectInjectionWorld.EntityManager;
+
             if (InitialPointer)
                 InitPointer();
         }
