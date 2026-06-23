@@ -13,7 +13,6 @@ namespace Input
     public class Controller : MonoBehaviour
     {
         [SerializeField] string Group;
-        [SerializeField] bool InitialPointer;
         [SerializeField] PointerSettings PointerSettings;
         [Space]
         [SerializeField] Data[] Actions;
@@ -23,17 +22,10 @@ namespace Input
         protected virtual void Start()
         {
             EntityManager = World.DefaultGameObjectInjectionWorld.EntityManager;
-
-            if (InitialPointer)
-                InitPointer();
         }
 
-        public void InitPointer()
-        {
-            if (PointerSettings)
-                PointerSystem.Init(PointerSettings);
-        }
         public string GetGroup() => Group;
+        public PointerSettings GetPointerSettings() => PointerSettings;
         public Data[] GetActions() => Actions;
 
         #region DATA

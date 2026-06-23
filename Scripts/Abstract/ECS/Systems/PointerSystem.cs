@@ -2,39 +2,45 @@ using Core;
 
 using Unity.Collections;
 using Unity.Entities;
-using Unity.Physics;
 
 using UnityEngine;
 using UnityEngine.InputSystem;
 
 namespace Input
 {
-    public abstract partial class PointerSystem : UnmanagedSingletonSystem<PhysicsWorldSingleton>
+    public abstract partial class PointerSystem : BehaviourSystem
     {
         public static Vector2 Current { get; private set; }
         public static Vector2 From { get; private set; }
         public static Vector2 Delta { get { return Current - From; } }
-
-        public static void Init(PointerSettings settings) => Settings = settings;
-        protected static PointerSettings Settings;
 
         protected MouseState Now;
         protected MouseState Prev;
 
         protected Vector2 MScroll;
 
-        protected Camera PlayerCamera;
+        protected Controller Controller;
+        protected PointerSettings Settings;
 
         bool IsPressed;
         float T;
 
         protected override void GetRef()
         {
-            if (!PlayerCamera)
+            if (!Controller)
             {
-                var go = GameObject.FindGameObjectWithTag("MainCamera");
-                if (go)
-                    PlayerCamera = go.GetComponent<Camera>();
+                var controllers = GameObject.FindGameObjectsWithTag("InputController");
+                if (controllers != null)
+                    for (int c = 0; c < controllers.Length; c++)
+                    {
+                        var controller = controllers[c].GetComponent<Controller>();
+                        if (controller?.GetGroup() == Group)
+                        {
+                            Controller = controller;
+
+                            break;
+                        }
+                    }
             }
         }
         /// <summary>
