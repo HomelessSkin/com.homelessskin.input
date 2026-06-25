@@ -10,9 +10,7 @@ namespace Input
 {
     public abstract partial class PointerSystem : BehaviourSystem
     {
-        public static Vector2 Current { get; private set; }
-        public static Vector2 From { get; private set; }
-        public static Vector2 Delta { get { return Current - From; } }
+        public static Vector2 Delta { get; private set; }
 
         protected MouseState Now;
         protected MouseState Prev;
@@ -83,8 +81,7 @@ namespace Input
                 return;
             T = 0f;
 
-            From = Current;
-            Current = mouse.position.ReadValue();
+            Delta = mouse.delta.ReadValue();
 
             switch (Now)
             {
