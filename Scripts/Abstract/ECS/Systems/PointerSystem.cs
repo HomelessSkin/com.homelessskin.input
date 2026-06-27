@@ -60,6 +60,9 @@ namespace Input
         }
         protected override void Proceed()
         {
+            if (!Settings)
+                return;
+
             if (Settings.LogActivity)
                 Log.Info(this, "Is Active");
 
