@@ -40,6 +40,10 @@ namespace Input
                         }
                     }
             }
+
+            if (!Settings &&
+                   Controller)
+                Settings = Controller.GetPointerSettings();
         }
         /// <summary>
         /// Conflicted SetState Method Calls
