@@ -122,9 +122,13 @@ namespace Input
                         ReleaseAction();
 
                         SetState(MouseState.Up);
+
+                        break;
                     }
                     else if (Delta.magnitude > 0.001f)
                         SetState(MouseState.Slide);
+
+                    HoldAction();
                 }
                 break;
                 case MouseState.Slide:
@@ -134,11 +138,13 @@ namespace Input
                         ReleaseAction();
 
                         SetState(MouseState.Up);
+
+                        break;
                     }
                     else if (Delta.magnitude <= 0.001f)
                         SetState(MouseState.Down);
-                    else
-                        DownSlideAction();
+
+                    DownSlideAction();
                 }
                 break;
             }
@@ -166,6 +172,11 @@ namespace Input
         {
             if (Settings.LogActions)
                 Log.Info(this, "Click");
+        }
+        protected virtual void HoldAction()
+        {
+            if (Settings.LogActions)
+                Log.Info(this, "Hold");
         }
         protected virtual void ReleaseAction()
         {
