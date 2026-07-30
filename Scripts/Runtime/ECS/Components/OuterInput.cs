@@ -1,63 +1,57 @@
-using System;
 using System.Collections.Generic;
-
-using Core;
 
 using Unity.Entities;
 
+using static Core.Log;
+
 namespace Input
 {
-    [Serializable]
-    public class OuterInput : IComponentData
+    public class OuterInput : IComponentData, ILogTarget
     {
-        public string Platform;
+        [LogInfo] public string Platform = "overlay";
+        [LogInfo] public string RewardID;
+        [LogInfo] public string Title;
+        [LogInfo] public string ID;
 
-        public string Title;
-        public string ID;
+        [LogInfo] public string UserID;
+        [LogInfo] public string Nick = "unknown";
+        [LogInfo] public int Points = 0;
 
-        public string UserID;
-        public string Nick;
-        public string NickColor;
+        [LogInfo] public List<Part> UserInput;
 
-        public string RewardID;
-        public int Points;
         public int Index;
-
         public bool IsSlashMe;
+        public string NickColor;
         public List<Icon> Badges;
-        public List<Part> UserInput;
 
-        [Serializable]
-        public class Part
+        public class Part : ILogTarget
         {
-            public Text Message;
+            [LogInfo] public Text Message;
+
             public Icon Emote;
             public Mention Reply;
 
-            [Serializable]
-            public class Text
+            public class Text : ILogTarget
             {
-                public string Content;
+                [LogInfo] public string Content;
             }
 
-            [Serializable]
             public class Mention
             {
                 public string Nick;
             }
         }
 
-        [Serializable]
         public class Icon
         {
             public int Hash;
             public int Index;
         }
 
-        public class End : IComponentData
+        public OuterInput() { }
+        public OuterInput(string title)
         {
-            public LogLevel Result;
-            public OuterInput Input;
+            Title = title;
         }
     }
 }

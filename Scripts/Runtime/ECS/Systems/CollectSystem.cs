@@ -19,10 +19,10 @@ namespace Input
             if (Value == null)
                 return;
 
-            var unended = new List<OuterInput.End>();
-            for (int d = 0; d < Value._Data.Count; d++)
-                if (Value._Data[d]._Type == Perform.Data.Type.Outer)
-                    unended.Add(new OuterInput.End { Result = LogLevel.Warning, Input = Value._Data[d].Input });
+            //var unended = new List<OuterInput.End>();
+            //for (int d = 0; d < Value._Data.Count; d++)
+            //    if (Value._Data[d]._Type == Perform.Data.Type.Outer)
+            //        unended.Add(new OuterInput.End { Result = LogLevel.Warning, Input = Value._Data[d].Input });
 
             Value._Data.Clear();
 
@@ -61,10 +61,12 @@ namespace Input
                 for (int e = 0; e < entities.Length; e++)
                 {
                     var input = EntityManager.GetComponentObject<OuterInput>(entities[e]);
+                    if (input.Title != "Message")
+                        Log.Object(this, input);
 
                     Value._Data.Add(new Perform.Data
                     {
-                        Key = input.Title.GetHashCode(),
+                        Key = input.Title.ToLower().GetHashCode(),
                         _Type = Perform.Data.Type.Outer,
                         Input = input,
                     });
@@ -73,8 +75,8 @@ namespace Input
                 EntityManager.DestroyEntity(query);
             }
 
-            for (int u = 0; u < unended.Count; u++)
-                Sys.Add_M(unended[u], EntityManager);
+            //for (int u = 0; u < unended.Count; u++)
+            //    Sys.Add_M(unended[u], EntityManager);
         }
     }
 

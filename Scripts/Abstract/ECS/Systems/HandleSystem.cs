@@ -159,7 +159,7 @@ namespace Input
             if (string.IsNullOrEmpty(data.Title))
                 return;
 
-            var key = data.Title.GetHashCode();
+            var key = data.Title.ToLower().GetHashCode();
             if (!OuterActions.TryGetValue(key, out var actions))
                 actions = new Controller.Data[ActionDataLength];
 
