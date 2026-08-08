@@ -19,11 +19,6 @@ namespace Input
             if (Value == null)
                 return;
 
-            //var unended = new List<OuterInput.End>();
-            //for (int d = 0; d < Value._Data.Count; d++)
-            //    if (Value._Data[d]._Type == Perform.Data.Type.Outer)
-            //        unended.Add(new OuterInput.End { Result = LogLevel.Warning, Input = Value._Data[d].Input });
-
             Value._Data.Clear();
 
             var keyboard = Keyboard.current;
@@ -37,19 +32,19 @@ namespace Input
                     if (key.wasPressedThisFrame)
                         Value._Data.Add(new Perform.Data
                         {
-                            Key = key.keyCode.ToString().GetHashCode(),
+                            Key = key.keyCode.ToString().ToLower().GetHashCode(),
                             _Type = Perform.Data.Type.Down
                         });
                     else if (key.wasReleasedThisFrame)
                         Value._Data.Add(new Perform.Data
                         {
-                            Key = key.keyCode.ToString().GetHashCode(),
+                            Key = key.keyCode.ToString().ToLower().GetHashCode(),
                             _Type = Perform.Data.Type.Up
                         });
                     else if (key.isPressed)
                         Value._Data.Add(new Perform.Data
                         {
-                            Key = key.keyCode.ToString().GetHashCode(),
+                            Key = key.keyCode.ToString().ToLower().GetHashCode(),
                             _Type = Perform.Data.Type.Hold
                         });
                 }
