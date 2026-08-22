@@ -20,7 +20,8 @@ namespace Input
         protected Controller Controller;
         protected PointerSettings Settings;
 
-        bool IsPressed;
+        bool LeftIsPressed;
+        bool RightIsPressed;
         float T;
 
         protected override void GetRef()
@@ -73,9 +74,13 @@ namespace Input
             var mouse = Mouse.current;
 
             if (mouse.leftButton.wasPressedThisFrame)
-                IsPressed = true;
+                LeftIsPressed = true;
             if (mouse.leftButton.wasReleasedThisFrame)
-                IsPressed = false;
+                LeftIsPressed = false;
+            if (mouse.rightButton.wasPressedThisFrame)
+                RightIsPressed = true;
+            if (mouse.rightButton.wasReleasedThisFrame)
+                RightIsPressed = false;
 
             MScroll = mouse.scroll.ReadValue();
             if (MScroll.y > 0f)
@@ -83,10 +88,10 @@ namespace Input
             else if (MScroll.y < 0f)
                 DownScrollAction();
 
-            T += SystemAPI.Time.DeltaTime;
-            if (T < Settings.Freequency)
+            T -= SystemAPI.Time.DeltaTime;
+            if (T > 0f)
                 return;
-            T = 0f;
+            T += Settings.Freequency;
 
             Delta = mouse.delta.ReadValue();
 
@@ -96,18 +101,25 @@ namespace Input
                 {
                     UIAction();
 
-                    IsPressed = false;
+                    LeftIsPressed = false;
+                    RightIsPressed = false;
 
                     SetState(MouseState.Up);
                 }
                 break;
                 case MouseState.Up:
                 {
-                    if (IsPressed)
+                    if (LeftIsPressed)
                     {
-                        ClickAction();
+                        LeftClickAction();
 
-                        SetState(MouseState.Down);
+                        SetState(MouseState.LeftDown);
+                    }
+                    else if (RightIsPressed)
+                    {
+                        RightClickAction();
+
+                        SetState(MouseState.RightDown);
                     }
                     else if (Delta.magnitude > 0.001f)
                         UpSlideAction();
@@ -115,36 +127,68 @@ namespace Input
                         UpAction();
                 }
                 break;
-                case MouseState.Down:
+                case MouseState.LeftDown:
                 {
-                    if (!IsPressed)
+                    if (!LeftIsPressed)
                     {
-                        ReleaseAction();
+                        ReleaseLeftAction();
 
                         SetState(MouseState.Up);
 
                         break;
                     }
                     else if (Delta.magnitude > 0.001f)
-                        SetState(MouseState.Slide);
+                        SetState(MouseState.LeftSlide);
 
-                    HoldAction();
+                    LeftHoldAction();
                 }
                 break;
-                case MouseState.Slide:
+                case MouseState.RightDown:
                 {
-                    if (!IsPressed)
+                    if (!RightIsPressed)
                     {
-                        ReleaseAction();
+                        ReleaseRightAction();
+
+                        SetState(MouseState.Up);
+
+                        break;
+                    }
+                    else if (Delta.magnitude > 0.001f)
+                        SetState(MouseState.RightSlide);
+
+                    RightHoldAction();
+                }
+                break;
+                case MouseState.LeftSlide:
+                {
+                    if (!LeftIsPressed)
+                    {
+                        ReleaseLeftAction();
 
                         SetState(MouseState.Up);
 
                         break;
                     }
                     else if (Delta.magnitude <= 0.001f)
-                        SetState(MouseState.Down);
+                        SetState(MouseState.LeftDown);
 
-                    DownSlideAction();
+                    LeftDownSlideAction();
+                }
+                break;
+                case MouseState.RightSlide:
+                {
+                    if (!RightIsPressed)
+                    {
+                        ReleaseRightAction();
+
+                        SetState(MouseState.Up);
+
+                        break;
+                    }
+                    else if (Delta.magnitude <= 0.001f)
+                        SetState(MouseState.RightDown);
+
+                    RightDownSlideAction();
                 }
                 break;
             }
@@ -168,40 +212,60 @@ namespace Input
             if (Settings.LogActions)
                 Log.Info(this, "Up");
         }
-        protected virtual void ClickAction()
+        protected virtual void LeftClickAction()
         {
             if (Settings.LogActions)
-                Log.Info(this, "Click");
+                Log.Info(this, "Left Click");
         }
-        protected virtual void HoldAction()
+        protected virtual void RightClickAction()
         {
             if (Settings.LogActions)
-                Log.Info(this, "Hold");
+                Log.Info(this, "Right Click");
         }
-        protected virtual void ReleaseAction()
+        protected virtual void LeftHoldAction()
         {
             if (Settings.LogActions)
-                Log.Info(this, "Release");
+                Log.Info(this, "Hold Left");
+        }
+        protected virtual void RightHoldAction()
+        {
+            if (Settings.LogActions)
+                Log.Info(this, "Hold Right");
+        }
+        protected virtual void ReleaseLeftAction()
+        {
+            if (Settings.LogActions)
+                Log.Info(this, "Release Left");
+        }
+        protected virtual void ReleaseRightAction()
+        {
+            if (Settings.LogActions)
+                Log.Info(this, "Release Right");
         }
         protected virtual void UpSlideAction()
         {
             if (Settings.LogActions)
-                Log.Info(this, "UpSlide");
+                Log.Info(this, "Up Slide");
         }
-        protected virtual void DownSlideAction()
+        protected virtual void LeftDownSlideAction()
         {
             if (Settings.LogActions)
-                Log.Info(this, "DownSlide");
+                Log.Info(this, "Left Down Slide");
+        }
+        protected virtual void RightDownSlideAction()
+        {
+            if (Settings.LogActions)
+                Log.Info(this, "Right Down Slide");
         }
         protected virtual void UpScrollAction()
         {
             if (Settings.LogActions)
-                Log.Info(this, "UpScroll");
+                Log.Info(this, "Up Scroll");
         }
         protected virtual void DownScrollAction()
         {
             if (Settings.LogActions)
-                Log.Info(this, "DownScroll");
+                Log.Info(this, "Down Scroll");
         }
     }
 
@@ -209,8 +273,10 @@ namespace Input
     {
         Up = 0,
         UI = 1,
-        Down = 2,
-        Slide = 3,
+        LeftDown = 2,
+        RightDown = 3,
+        LeftSlide = 4,
+        RightSlide = 5,
     }
 
     public struct SetPointerStateRequest : IComponentData
