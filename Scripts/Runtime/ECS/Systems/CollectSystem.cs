@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 
 using Core;
@@ -13,11 +12,14 @@ namespace Input
     [UpdateInGroup(typeof(InputSystemGroup))]
     public partial class CollectSystem : ManagedSingletonSystem<Perform>
     {
+        Dictionary<int, string> OuterMap = new Dictionary<int, string>();
+
         protected override void GetRef() { }
         protected override void Proceed()
         {
-            if (Value == null)
-                return;
+            for (int d = 0; d < Value._Data.Count; d++)
+                if (OuterMap.TryGetValue(Value._Data[d].Key, out var name))
+                    Log.Warning(this, $"Outer Input '{name}' was not released previous Frame!");
 
             Value._Data.Clear();
 
@@ -59,9 +61,13 @@ namespace Input
                     if (input.Title != "Message")
                         Log.Object(this, input);
 
+                    var key = input.Title.ToLower().GetHashCode();
+                    if (!OuterMap.TryGetValue(key, out var name))
+                        OuterMap[key] = input.Title;
+
                     Value._Data.Add(new Perform.Data
                     {
-                        Key = input.Title.ToLower().GetHashCode(),
+                        Key = key,
                         _Type = Perform.Data.Type.Outer,
                         Input = input,
                     });
@@ -69,9 +75,6 @@ namespace Input
 
                 EntityManager.DestroyEntity(query);
             }
-
-            //for (int u = 0; u < unended.Count; u++)
-            //    Sys.Add_M(unended[u], EntityManager);
         }
     }
 
@@ -80,7 +83,6 @@ namespace Input
     {
         public List<Data> _Data = new List<Data>();
 
-        [Serializable]
         public class Data
         {
             public int Key;
