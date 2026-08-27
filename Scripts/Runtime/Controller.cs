@@ -14,6 +14,7 @@ namespace Input
     {
         [SerializeField] string Group;
         [SerializeField] PointerSettings PointerSettings;
+
         [Space]
         [SerializeField] Data[] Actions;
 
