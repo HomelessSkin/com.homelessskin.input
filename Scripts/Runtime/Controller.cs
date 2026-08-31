@@ -16,6 +16,15 @@ namespace Input
         [Space]
         [SerializeField] Data[] Actions;
 
+        protected ControllerState State;
+
+        public ControllerState GetState() => State;
+
+        protected virtual void SetState(ControllerState state)
+        {
+            State = state;
+        }
+
         public string GetGroup() => Group;
         public PointerSettings GetPointerSettings() => PointerSettings;
         public Data[] GetActions() => Actions;
@@ -40,6 +49,17 @@ namespace Input
             }
         }
         #endregion
+
+        public enum ControllerState : byte
+        {
+            Main = 0,
+            Started = 1,
+            Playing = 2,
+            Stoped = 3,
+            Closed = 4,
+            Paused = 5,
+
+        }
 
 #if UNITY_EDITOR
         protected virtual void Reset()
