@@ -59,6 +59,10 @@ namespace Input
             Closed = 4,
             Paused = 5,
 
+
+
+            Editor = 100,
+
         }
 
 #if UNITY_EDITOR

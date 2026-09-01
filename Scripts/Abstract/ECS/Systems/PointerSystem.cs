@@ -15,6 +15,7 @@ namespace Input
         protected MouseState Now;
         protected MouseState Prev;
 
+        protected Vector2 MCursor;
         protected Vector2 MScroll;
 
         protected Controller Controller;
@@ -82,6 +83,7 @@ namespace Input
             if (mouse.rightButton.wasReleasedThisFrame)
                 RightIsPressed = false;
 
+            MCursor = mouse.position.ReadValue();
             MScroll = mouse.scroll.ReadValue();
             if (MScroll.y > 0f)
                 UpScrollAction();
