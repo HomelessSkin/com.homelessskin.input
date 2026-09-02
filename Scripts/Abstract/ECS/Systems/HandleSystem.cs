@@ -12,6 +12,8 @@ using UnityEngine.InputSystem;
 
 namespace Input
 {
+    [UpdateInGroup(typeof(InputSystemGroup))]
+    [UpdateAfter(typeof(CollectSystem))]
     public abstract partial class HandleSystem : ManagedSingletonSystem<Perform>
     {
         protected static string RulesPath;
