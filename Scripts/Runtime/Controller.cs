@@ -58,6 +58,7 @@ namespace Input
             Stoped = 3,
             Closed = 4,
             Paused = 5,
+            Loaded = 6,
 
 
 
