@@ -10,7 +10,7 @@ namespace Input
 {
     public class Controller : MonoBehaviour
     {
-        [SerializeField] string Group;
+        [SerializeField] protected string Group;
         [SerializeField] PointerSettings PointerSettings;
 
         [Space]
