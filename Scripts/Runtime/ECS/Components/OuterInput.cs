@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
 
-using Unity.Entities;
+using Core;
 
-using static Core.Log;
+using Unity.Entities;
 
 namespace Input
 {
@@ -14,8 +14,9 @@ namespace Input
         [LogInfo] public string ID;
         [LogInfo] public string Source = "this";
         [LogInfo] public string Agent = "unknown";
-        [LogInfo] public int Cost = 0;
         [LogInfo] public string Message;
+        [LogInfo] public int Point = 0;
+        [LogInfo] public long Spawn = 0L;
 
         [NonSerialized] public string UserID;
         [NonSerialized] public string RewardID;
@@ -39,7 +40,7 @@ namespace Input
             ID = input.ID;
             Source = input.Source;
             Agent = input.Agent;
-            Cost = input.Cost;
+            Point = input.Point;
             Message = input.Message;
 
             UserID = input.UserID;
