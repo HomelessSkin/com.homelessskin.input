@@ -43,8 +43,7 @@ namespace Input
                     }
             }
 
-            if (!Settings &&
-                   Controller)
+            if (!Settings && Controller)
                 Settings = Controller.GetPointerSettings();
         }
         /// <summary>
