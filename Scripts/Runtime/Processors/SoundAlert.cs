@@ -3,6 +3,7 @@ using System.IO;
 
 using Core;
 
+using Unity.Collections;
 using Unity.Entities;
 
 using UnityEngine;
@@ -38,47 +39,47 @@ namespace Input
         [LogInfo] public string Folder;
 
         [Space]
-        [LogInfo] public string[] Keys;
+        [LogInfo] public Input.Key[] Keys;
 
         [Space]
         [LogInfo] public Clip[] Clips;
 
-        protected override bool Invoke(string data)
+        public override Key[] GetKeys(int index)
         {
-            var contains = true;
-            var arr = data.Split();
+            var keys = new Key[Keys.Length];
             for (int k = 0; k < Keys.Length; k++)
             {
-                contains &= Contains(Keys[k].ToLower());
-                if (!contains)
-                    break;
+                var key = Keys[k];
+                var cuts = new FixedList32Bytes<int>();
+                for (int c = 0; c < key.Cuts.Length; c++)
+                    cuts.Add(key.Cuts[c].GetHashCode());
+
+                keys[k] = new Key
+                {
+                    CompareType = Key.Type.ByAll,
+                    IsPublic = IsPublic,
+                    Index = index,
+
+                    Cuts = cuts,
+                };
             }
 
-            if (contains)
-            {
-                var index = 0;
-                if (Clips.Length > 1)
-                    index = Random.Range(1, Clips.Length);
+            return keys;
+        }
 
-                var clip = new Clip(Clips[index]);
-                clip.Path = Path.Combine("file://", Application.persistentDataPath, Folder, clip.Path + ".mp3");
+        protected override void Invoke(string data)
+        {
+            var index = 0;
+            if (Clips.Length > 1)
+                index = Random.Range(1, Clips.Length);
 
-                var input = new OuterInput(Input);
-                input.Message = JsonUtility.ToJson(clip);
+            var clip = new Clip(Clips[index]);
+            clip.Path = Path.Combine("file://", Application.persistentDataPath, Folder, clip.Path + ".mp3");
 
-                Sys.Add_M(input, World.DefaultGameObjectInjectionWorld.EntityManager);
-            }
+            var input = new OuterInput(Input);
+            input.Message = JsonUtility.ToJson(clip);
 
-            return contains;
-
-            bool Contains(string key)
-            {
-                for (int a = 0; a < arr.Length; a++)
-                    if (arr[a].ToLower().Equals(key))
-                        return true;
-
-                return false;
-            }
+            Sys.Add_M(input, World.DefaultGameObjectInjectionWorld.EntityManager);
         }
     }
 }

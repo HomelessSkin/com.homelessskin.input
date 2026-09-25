@@ -4,7 +4,6 @@ using Core;
 
 using UnityEngine;
 using UnityEngine.Events;
-using UnityEngine.InputSystem;
 
 namespace Input
 {
@@ -34,7 +33,7 @@ namespace Input
         public class Data
         {
             [HideInInspector] public string Name;
-            public Key Key;
+            public UnityEngine.InputSystem.Key Key;
             public Perform.Data.Type Type;
             public string Title;
             [Space]
@@ -79,7 +78,7 @@ namespace Input
                 {
                     var action = Actions[a];
 
-                    if (action.Key != Key.None)
+                    if (action.Key != UnityEngine.InputSystem.Key.None)
                         action.Title = action.Key.ToString();
                     else if (!string.IsNullOrEmpty(action.Title))
                         action.Type = Perform.Data.Type.Outer;

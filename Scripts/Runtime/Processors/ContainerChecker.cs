@@ -2,6 +2,7 @@ using System;
 
 using Core;
 
+using Unity.Collections;
 using Unity.Entities;
 
 using UnityEngine;
@@ -22,32 +23,34 @@ namespace Input
     public class ContainerCheckerCommand : Command
     {
         [Space]
-        [LogInfo] public string[] Keys;
+        [LogInfo] public Input.Key[] Keys;
 
-        protected override bool Invoke(string data)
+        public override Key[] GetKeys(int index)
         {
-            var contains = true;
-            var arr = data.Split();
+            var keys = new Key[Keys.Length];
             for (int k = 0; k < Keys.Length; k++)
             {
-                contains &= Contains(Keys[k].ToLower());
-                if (!contains)
-                    break;
+                var key = Keys[k];
+                var cuts = new FixedList32Bytes<int>();
+                for (int c = 0; c < key.Cuts.Length; c++)
+                    cuts.Add(key.Cuts[c].GetHashCode());
+
+                keys[k] = new Key
+                {
+                    CompareType = Key.Type.ByAll,
+                    IsPublic = IsPublic,
+                    Index = index,
+
+                    Cuts = cuts,
+                };
             }
 
-            if (contains)
-                Sys.Add_M(Input, World.DefaultGameObjectInjectionWorld.EntityManager);
+            return keys;
+        }
 
-            return contains;
-
-            bool Contains(string key)
-            {
-                for (int a = 0; a < arr.Length; a++)
-                    if (arr[a].ToLower().Equals(key))
-                        return true;
-
-                return false;
-            }
+        protected override void Invoke(string data)
+        {
+            Sys.Add_M(Input, World.DefaultGameObjectInjectionWorld.EntityManager);
         }
     }
 }

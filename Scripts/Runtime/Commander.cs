@@ -5,6 +5,11 @@ using System.Threading.Tasks;
 
 using Core;
 
+using Unity.Burst;
+using Unity.Collections;
+using Unity.Jobs;
+using Unity.Jobs.LowLevel.Unsafe;
+
 using UnityEngine;
 
 namespace Input
@@ -17,6 +22,9 @@ namespace Input
         [Space]
         [SerializeField] Processor[] Processors;
 
+        int Index = 0;
+
+        NativeList<Command.Key> Keys;
         List<Command> Commands = new List<Command>();
 
         [Space]
@@ -26,9 +34,21 @@ namespace Input
         {
             ReloadCommands();
         }
+        void OnDestroy()
+        {
+            if (Keys.IsCreated)
+                Keys.Dispose();
+        }
 
         public async void ReloadCommands()
         {
+            Index = 0;
+
+            if (Keys.IsCreated)
+                Keys.Clear();
+            else
+                Keys = new NativeList<Command.Key>(Allocator.Persistent);
+
             Commands.Clear();
 
             var path = Path.Combine(Application.persistentDataPath, JSONFolder);
@@ -36,7 +56,7 @@ namespace Input
             for (int p = 0; p < Processors.Length; p++)
             {
                 var processor = Processors[p];
-                Commands.Add(processor.Command);
+                await AddCommand(processor.Command);
 
                 if (!folders.Contains(processor.JSONPath))
                 {
@@ -56,24 +76,32 @@ namespace Input
 
                     var type = processor.Command.GetType();
                     for (int f = 0; f < files.Length; f++)
-                    {
-                        await Task.Delay(1000);
-                        await AddCommand(files[f], type);
-                    }
+                        await AddCommand(await LoadCommand(files[f], type));
                 }
             }
 
-            async Task AddCommand(string file, Type type)
+            async Task AddCommand(Command command)
             {
+                await Task.Delay(32);
+
+                Keys.AddRange(command.GetKeys(Index++));
+                Commands.Add(command);
+
+                Log.Info(this, $"Added Command of Type: {command.GetType().FullName}");
+                Log.Object(this, command);
+            }
+            async Task<Command> LoadCommand(string file, Type type)
+            {
+
                 var text = await File.ReadAllTextAsync(file);
                 if (!string.IsNullOrEmpty(text))
                 {
                     var obj = JsonUtility.FromJson(text, type);
-                    Commands.Add(obj as Command);
 
-                    Log.Info(this, $"Added Command of Type: {type.FullName}");
-                    Log.Object(this, obj as ILogTarget);
+                    return obj as Command;
                 }
+
+                return null;
             }
         }
         public void Process(string data, bool isInternal = true)
@@ -82,11 +110,110 @@ namespace Input
             for (int t = 0; t < Trimming.Length; t++)
                 data = data.Replace(Trimming[t], "");
 
-            Log.Info(this, $"Processing Voice Data:\n{data}");
+            var message = new NativeList<int>(Allocator.TempJob);
+            var arr = data.Split();
+            for (int a = 0; a < arr.Length; a++)
+            {
+                var sub = arr[a];
+                if (sub.Contains("<") || sub.Contains(">"))
+                    continue;
 
-            for (int c = 0; c < Commands.Count; c++)
-                if (Commands[c].Call(data, isInternal))
+                message.Add(sub.GetHashCode());
+            }
+
+            if (message.Length > 0)
+            {
+                Log.Info(this, $"Processing Voice Data:\n{data}");
+
+                var stream = new NativeStream(Keys.Length, Allocator.TempJob);
+
+                new KeyJob
+                {
+                    IsInternal = isInternal,
+
+                    Keys = Keys,
+                    Message = message,
+
+                    Writer = stream.AsWriter()
+                }
+                .Schedule(Keys.Length, Keys.Length / JobsUtility.JobWorkerCount)
+                .Complete();
+
+                var stop = false;
+                var reader = stream.AsReader();
+                for (int f = 0; f < reader.ForEachCount; f++)
+                {
+                    reader.BeginForEachIndex(f);
+                    while (reader.RemainingItemCount > 0)
+                    {
+                        reader.Read<bool>();
+
+                        stop = Commands[Keys[f].Index].Call(data);
+                        if (stop)
+                            break;
+                    }
+                    reader.EndForEachIndex();
+
+                    if (stop)
+                        break;
+                }
+
+                stream.Dispose();
+            }
+
+            message.Dispose();
+        }
+
+        [BurstCompile]
+        struct KeyJob : IJobParallelFor
+        {
+            [ReadOnly] public bool IsInternal;
+
+            [ReadOnly] public NativeList<Command.Key> Keys;
+            [ReadOnly, NativeDisableParallelForRestriction] public NativeList<int> Message;
+
+            public NativeStream.Writer Writer;
+
+            public void Execute(int index)
+            {
+                var key = Keys[index];
+                if (!IsInternal && !key.IsPublic)
                     return;
+
+                var isFits = true;
+                switch (key.CompareType)
+                {
+                    case Command.Key.Type.ByFirst:
+                    isFits = Message[0] == key.Cuts[0];
+                    break;
+
+                    case Command.Key.Type.ByAll:
+                    for (int c = 0; c < key.Cuts.Length; c++)
+                    {
+                        isFits &= Contains(key.Cuts[c]);
+
+                        if (!isFits)
+                            break;
+                    }
+                    break;
+                }
+
+                if (isFits)
+                {
+                    Writer.BeginForEachIndex(index);
+                    Writer.Write(true);
+                    Writer.EndForEachIndex();
+                }
+            }
+
+            bool Contains(int id)
+            {
+                for (int m = 0; m < Message.Length; m++)
+                    if (Message[m] == id)
+                        return true;
+
+                return false;
+            }
         }
 
 #if UNITY_EDITOR

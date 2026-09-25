@@ -2,6 +2,8 @@ using System;
 
 using Core;
 
+using Unity.Collections;
+
 using UnityEngine;
 
 namespace Input
@@ -35,18 +37,40 @@ namespace Input
     public abstract class Command : ILogTarget
     {
         public bool IsPublic;
+        public bool IsFinal;
 
         [Space]
         [LogInfo] public OuterInput Input;
 
-        public bool Call(string data, bool isInternal)
-        {
-            if (IsPublic || isInternal)
-                return Invoke(data);
+        public abstract Key[] GetKeys(int index);
 
-            return false;
+        public bool Call(string data)
+        {
+            Invoke(data);
+
+            return IsFinal;
         }
 
-        protected abstract bool Invoke(string data);
+        protected abstract void Invoke(string data);
+
+        public struct Key
+        {
+            public Type CompareType;
+            public bool IsPublic;
+            public int Index;
+
+            public FixedList32Bytes<int> Cuts;
+
+            public enum Type : byte
+            {
+                ByFirst = 0,
+                ByAll = 1,
+            }
+        }
+    }
+    [Serializable]
+    public class Key : ILogTarget
+    {
+        [LogInfo] public string[] Cuts;
     }
 }
