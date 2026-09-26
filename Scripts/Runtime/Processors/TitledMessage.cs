@@ -37,7 +37,7 @@ namespace Whisper
 
                 Cuts = new FixedList32Bytes<int>
                 {
-                    Title.GetHashCode()
+                    Title.ToLower().GetHashCode()
                 }
             }
         };

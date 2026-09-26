@@ -115,7 +115,7 @@ namespace Input
             for (int a = 0; a < arr.Length; a++)
             {
                 var sub = arr[a];
-                if (sub.Contains("<") || sub.Contains(">"))
+                if (sub.Contains("<") || sub.Contains(">") || string.IsNullOrEmpty(sub))
                     continue;
 
                 message.Add(sub.GetHashCode());
@@ -160,6 +160,8 @@ namespace Input
 
                 stream.Dispose();
             }
+            else
+                Log.Info(this, $"Data Message is empty!");
 
             message.Dispose();
         }

@@ -52,7 +52,7 @@ namespace Input
                 var key = Keys[k];
                 var cuts = new FixedList32Bytes<int>();
                 for (int c = 0; c < key.Cuts.Length; c++)
-                    cuts.Add(key.Cuts[c].GetHashCode());
+                    cuts.Add(key.Cuts[c].ToLower().GetHashCode());
 
                 keys[k] = new Key
                 {
