@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 
 using Core;
@@ -52,13 +53,15 @@ namespace Input
             Commands.Clear();
 
             var path = Path.Combine(Application.persistentDataPath, JSONFolder);
+            var allCommands = new AllCommands();
             var folders = new List<string>();
             for (int p = 0; p < Processors.Length; p++)
             {
                 var processor = Processors[p];
                 await AddCommand(processor.Command);
 
-                if (!folders.Contains(processor.JSONPath))
+                if (!string.IsNullOrEmpty(processor.JSONPath) &&
+                     !folders.Contains(processor.JSONPath))
                 {
                     folders.Add(processor.JSONPath);
 
@@ -80,11 +83,23 @@ namespace Input
                 }
             }
 
+            File.WriteAllText(Path.Combine(path, "All Commands/AllCommands.json"), JsonUtility.ToJson(allCommands, true));
+
             async Task AddCommand(Command command)
             {
                 await Task.Delay(32);
 
-                Keys.AddRange(command.GetKeys(Index++));
+                var keys = command.GetKeys(Index++);
+                if (keys != null)
+                    Keys.AddRange(keys);
+
+                if (command.IsPublic)
+                {
+                    var phrases = command.GetPhrases();
+                    if (phrases != null)
+                        allCommands.Phrases.AddRange(phrases);
+                }
+
                 Commands.Add(command);
 
                 Log.Info(this, $"Added Command of Type: {command.GetType().FullName}");
@@ -104,8 +119,11 @@ namespace Input
                 return null;
             }
         }
-        public void Process(string data, bool isInternal = true)
+        public Command.Response Process(OuterInput input) => Process(input.Message, false);
+        public Command.Response Process(string data, bool isInternal = true)
         {
+            var response = Command.Response.Nominal;
+
             data = data.ToLower();
             for (int t = 0; t < Trimming.Length; t++)
                 data = data.Replace(Trimming[t], "");
@@ -123,7 +141,7 @@ namespace Input
 
             if (message.Length > 0)
             {
-                Log.Info(this, $"Processing Voice Data:\n{data}");
+                Log.Info(this, $"Processing Message Data:\n{data}");
 
                 var stream = new NativeStream(Keys.Length, Allocator.TempJob);
 
@@ -139,8 +157,8 @@ namespace Input
                 .Schedule(Keys.Length, Keys.Length / JobsUtility.JobWorkerCount)
                 .Complete();
 
-                var stop = false;
                 var reader = stream.AsReader();
+                var list = new List<Command>();
                 for (int f = 0; f < reader.ForEachCount; f++)
                 {
                     reader.BeginForEachIndex(f);
@@ -148,22 +166,24 @@ namespace Input
                     {
                         reader.Read<bool>();
 
-                        stop = Commands[Keys[f].Index].Call(data);
-                        if (stop)
-                            break;
+                        list.Add(Commands[Keys[f].Index]);
                     }
                     reader.EndForEachIndex();
-
-                    if (stop)
-                        break;
                 }
 
                 stream.Dispose();
+
+                list = list.OrderByDescending(x => x.Priority).ToList();
+                for (int l = 0; l < list.Count; l++)
+                    if (list[l].Call(data, ref response))
+                        break;
             }
             else
                 Log.Info(this, $"Data Message is empty!");
 
             message.Dispose();
+
+            return response;
         }
 
         [BurstCompile]
@@ -182,7 +202,7 @@ namespace Input
                 if (!IsInternal && !key.IsPublic)
                     return;
 
-                var isFits = true;
+                var isFits = false;
                 switch (key.CompareType)
                 {
                     case Command.Key.Type.ByFirst:
@@ -190,6 +210,7 @@ namespace Input
                     break;
 
                     case Command.Key.Type.ByAll:
+                    isFits = true;
                     for (int c = 0; c < key.Cuts.Length; c++)
                     {
                         isFits &= Contains(key.Cuts[c]);
@@ -197,6 +218,11 @@ namespace Input
                         if (!isFits)
                             break;
                     }
+                    break;
+
+                    case Command.Key.Type.ByAny:
+                    for (int c = 0; c < key.Cuts.Length; c++)
+                        isFits |= Contains(key.Cuts[c]);
                     break;
                 }
 
@@ -216,6 +242,12 @@ namespace Input
 
                 return false;
             }
+        }
+
+        [Serializable]
+        public class AllCommands
+        {
+            public List<string> Phrases = new List<string>();
         }
 
 #if UNITY_EDITOR

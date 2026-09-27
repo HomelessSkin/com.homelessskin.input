@@ -38,21 +38,29 @@ namespace Input
     {
         public bool IsPublic;
         public bool IsFinal;
+        public float Priority;
 
         [Space]
         [LogInfo] public OuterInput Input;
 
         public abstract Key[] GetKeys(int index);
+        public abstract string[] GetPhrases();
 
-        public bool Call(string data)
+        public bool Call(string data, ref Response response)
         {
-            Invoke(data);
+            Invoke(data, ref response);
 
             return IsFinal;
         }
 
-        protected abstract void Invoke(string data);
+        protected abstract void Invoke(string data, ref Response response);
 
+        public enum Response : byte
+        {
+            Nominal = 0,
+            StopInteractionNow = 1,
+
+        }
         public struct Key
         {
             public Type CompareType;
@@ -65,6 +73,7 @@ namespace Input
             {
                 ByFirst = 0,
                 ByAll = 1,
+                ByAny = 2,
             }
         }
     }

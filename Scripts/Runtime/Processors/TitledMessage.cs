@@ -41,8 +41,9 @@ namespace Whisper
                 }
             }
         };
+        public override string[] GetPhrases() => new string[] { Title };
 
-        protected override void Invoke(string data)
+        protected override void Invoke(string data, ref Response response)
         {
             var message = data.Trim().ToLower();
 
@@ -50,6 +51,8 @@ namespace Whisper
             input.Message = data.Replace(Title.ToLower(), "").Trim();
 
             Sys.Add_M(input, World.DefaultGameObjectInjectionWorld.EntityManager);
+
+            response = Response.Nominal;
         }
     }
 }

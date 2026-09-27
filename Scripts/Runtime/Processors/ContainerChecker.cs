@@ -23,6 +23,7 @@ namespace Input
     public class ContainerCheckerCommand : Command
     {
         [Space]
+        [Tooltip("Maximum 6-7 Words a Key")]
         [LogInfo] public Input.Key[] Keys;
 
         public override Key[] GetKeys(int index)
@@ -47,10 +48,27 @@ namespace Input
 
             return keys;
         }
+        public override string[] GetPhrases()
+        {
+            var phrases = new string[Keys.Length];
+            for (int k = 0; k < Keys.Length; k++)
+            {
+                var key = Keys[k];
+                var phrase = "";
+                for (int c = 0; c < key.Cuts.Length; c++)
+                    phrase += $"{key.Cuts[c]} ";
 
-        protected override void Invoke(string data)
+                phrases[k] = phrase;
+            }
+
+            return phrases;
+        }
+
+        protected override void Invoke(string data, ref Response response)
         {
             Sys.Add_M(Input, World.DefaultGameObjectInjectionWorld.EntityManager);
+
+            response = Response.Nominal;
         }
     }
 }

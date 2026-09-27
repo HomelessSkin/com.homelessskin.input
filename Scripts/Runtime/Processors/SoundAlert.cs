@@ -39,6 +39,7 @@ namespace Input
         [LogInfo] public string Folder;
 
         [Space]
+        [Tooltip("Maximum 6-7 Words a Key")]
         [LogInfo] public Input.Key[] Keys;
 
         [Space]
@@ -66,8 +67,23 @@ namespace Input
 
             return keys;
         }
+        public override string[] GetPhrases()
+        {
+            var phrases = new string[Keys.Length];
+            for (int k = 0; k < Keys.Length; k++)
+            {
+                var key = Keys[k];
+                var phrase = "";
+                for (int c = 0; c < key.Cuts.Length; c++)
+                    phrase += @$"{key.Cuts[c]} ";
 
-        protected override void Invoke(string data)
+                phrases[k] = phrase;
+            }
+
+            return phrases;
+        }
+
+        protected override void Invoke(string data, ref Response response)
         {
             var index = 0;
             if (Clips.Length > 1)
@@ -80,6 +96,8 @@ namespace Input
             input.Message = JsonUtility.ToJson(clip);
 
             Sys.Add_M(input, World.DefaultGameObjectInjectionWorld.EntityManager);
+
+            response = Response.Nominal;
         }
     }
 }
