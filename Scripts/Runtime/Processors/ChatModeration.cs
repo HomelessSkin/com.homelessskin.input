@@ -23,7 +23,7 @@ namespace Input
     {
         [Space]
         [Tooltip("Maximum 6-7 Words a Key")]
-        [LogInfo] public Input.Key[] Keys;
+        public Input.Key[] Keys;
 
         public override Key[] GetKeys(int index)
         {

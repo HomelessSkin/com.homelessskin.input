@@ -83,7 +83,7 @@ namespace Input
                 }
             }
 
-            File.WriteAllText(Path.Combine(path, "All Commands/AllCommands.json"), JsonUtility.ToJson(allCommands, true));
+            File.WriteAllText(Path.Combine(path, "AllCommands.json"), JsonUtility.ToJson(allCommands, true));
 
             async Task AddCommand(Command command)
             {

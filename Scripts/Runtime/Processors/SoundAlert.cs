@@ -15,7 +15,7 @@ namespace Input
     [CreateAssetMenu(fileName = "Sound Alert", menuName = "Input/Processors/Sound Alert")]
     public class SoundAlert : Processor
     {
-        public override string JSONPath => "Sound Alerts/";
+        public override string JSONPath => "Sound Alerts/Commands/";
 
         public override Command Command => command;
 
@@ -87,10 +87,10 @@ namespace Input
         {
             var index = 0;
             if (Clips.Length > 1)
-                index = Random.Range(1, Clips.Length);
+                index = Random.Range(0, Clips.Length);
 
             var clip = new Clip(Clips[index]);
-            clip.Path = Path.Combine("file://", Application.persistentDataPath, Folder, clip.Path + ".mp3");
+            clip.Path = Path.Combine("file://", Application.persistentDataPath, "Input/Sound Alerts/", Folder, clip.Path + ".mp3");
 
             var input = new OuterInput(Input);
             input.Message = JsonUtility.ToJson(clip);
