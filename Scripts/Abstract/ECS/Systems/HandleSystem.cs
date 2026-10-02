@@ -8,7 +8,6 @@ using Unity.Entities;
 
 using UnityEngine;
 using UnityEngine.Events;
-using UnityEngine.InputSystem;
 
 namespace Input
 {

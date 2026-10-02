@@ -97,7 +97,7 @@ namespace Input
 
             Sys.Add_M(input, World.DefaultGameObjectInjectionWorld.EntityManager);
 
-            response = Response.Nominal;
+            response = Response.SoundAlert;
         }
     }
 }

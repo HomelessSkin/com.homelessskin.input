@@ -59,6 +59,7 @@ namespace Input
         {
             Nominal = 0,
             StopInteractionNow = 1,
+            SoundAlert = 2,
 
         }
         public struct Key
