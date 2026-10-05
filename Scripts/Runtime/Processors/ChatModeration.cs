@@ -1,7 +1,5 @@
 using System;
 
-using Core;
-
 using Unity.Collections;
 
 using UnityEngine;
@@ -42,7 +40,9 @@ namespace Input
                 {
                     CompareType = Key.Type.ByAny,
                     IsPublic = IsPublic,
-                    Index = index,
+                    CommandIndex = index,
+                    Index = k,
+                    Priority = Priority,
 
                     Cuts = cuts,
                 };
@@ -52,7 +52,7 @@ namespace Input
         }
         public override string[] GetPhrases() => null;
 
-        protected override void Invoke(string data, ref Response response)
+        protected override void Invoke(ref string data, ref Response response, Key key)
         {
             response = Response.StopInteractionNow;
         }

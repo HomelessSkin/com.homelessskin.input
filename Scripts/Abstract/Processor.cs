@@ -46,14 +46,14 @@ namespace Input
         public abstract Key[] GetKeys(int index);
         public abstract string[] GetPhrases();
 
-        public bool Call(string data, ref Response response)
+        public bool Call(ref string data, ref Response response, Key key)
         {
-            Invoke(data, ref response);
+            Invoke(ref data, ref response, key);
 
             return IsFinal;
         }
 
-        protected abstract void Invoke(string data, ref Response response);
+        protected abstract void Invoke(ref string data, ref Response response, Key key);
 
         public enum Response : byte
         {
@@ -66,7 +66,9 @@ namespace Input
         {
             public Type CompareType;
             public bool IsPublic;
+            public int CommandIndex;
             public int Index;
+            public float Priority;
 
             public FixedList32Bytes<int> Cuts;
 

@@ -119,10 +119,11 @@ namespace Input
                 return null;
             }
         }
-        public Command.Response Process(OuterInput input) => Process(input.Message, false);
-        public Command.Response Process(string data, bool isInternal = true)
+        public Command.Response Process(ref OuterInput input) => Process(ref input.Message, false);
+        public Command.Response Process(ref string line, bool isInternal = true)
         {
             var response = Command.Response.Nominal;
+            var data = new string(line);
 
             data = data.ToLower();
             for (int t = 0; t < Trimming.Length; t++)
@@ -158,7 +159,7 @@ namespace Input
                 .Complete();
 
                 var reader = stream.AsReader();
-                var list = new List<Command>();
+                var list = new List<Command.Key>();
                 for (int f = 0; f < reader.ForEachCount; f++)
                 {
                     reader.BeginForEachIndex(f);
@@ -166,7 +167,7 @@ namespace Input
                     {
                         reader.Read<bool>();
 
-                        list.Add(Commands[Keys[f].Index]);
+                        list.Add(Keys[f]);
                     }
                     reader.EndForEachIndex();
                 }
@@ -175,8 +176,11 @@ namespace Input
 
                 list = list.OrderByDescending(x => x.Priority).ToList();
                 for (int l = 0; l < list.Count; l++)
-                    if (list[l].Call(data, ref response))
+                {
+                    var key = list[l];
+                    if (Commands[key.CommandIndex].Call(ref line, ref response, key))
                         break;
+                }
             }
             else
                 Log.Info(this, $"Data Message is empty!");

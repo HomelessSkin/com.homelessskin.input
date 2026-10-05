@@ -59,7 +59,9 @@ namespace Input
                 {
                     CompareType = Key.Type.ByAll,
                     IsPublic = IsPublic,
-                    Index = index,
+                    CommandIndex = index,
+                    Index = k,
+                    Priority = Priority,
 
                     Cuts = cuts,
                 };
@@ -83,8 +85,12 @@ namespace Input
             return phrases;
         }
 
-        protected override void Invoke(string data, ref Response response)
+        protected override void Invoke(ref string data, ref Response response, Key key)
         {
+            var Key = Keys[key.Index];
+            for (int c = 0; c < Key.Cuts.Length; c++)
+                data = data.Replace(Key.Cuts[c], $"<b><gradient=Polar>{Key.Cuts[c].ToUpper()}</gradient></b>");
+
             var index = 0;
             if (Clips.Length > 1)
                 index = Random.Range(0, Clips.Length);

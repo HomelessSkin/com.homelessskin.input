@@ -33,7 +33,9 @@ namespace Whisper
             {
                 CompareType = Key.Type.ByFirst,
                 IsPublic = IsPublic,
-                Index = index,
+                CommandIndex = index,
+                Index = 0,
+                Priority = Priority,
 
                 Cuts = new FixedList32Bytes<int>
                 {
@@ -43,7 +45,7 @@ namespace Whisper
         };
         public override string[] GetPhrases() => new string[] { Title };
 
-        protected override void Invoke(string data, ref Response response)
+        protected override void Invoke(ref string data, ref Response response, Key key)
         {
             var message = data.Trim().ToLower();
 

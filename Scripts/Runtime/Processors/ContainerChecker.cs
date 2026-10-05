@@ -40,7 +40,9 @@ namespace Input
                 {
                     CompareType = Key.Type.ByAll,
                     IsPublic = IsPublic,
-                    Index = index,
+                    CommandIndex = index,
+                    Index = k,
+                    Priority = Priority,
 
                     Cuts = cuts,
                 };
@@ -64,7 +66,7 @@ namespace Input
             return phrases;
         }
 
-        protected override void Invoke(string data, ref Response response)
+        protected override void Invoke(ref string data, ref Response response, Key key)
         {
             Sys.Add_M(Input, World.DefaultGameObjectInjectionWorld.EntityManager);
 
