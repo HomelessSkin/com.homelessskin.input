@@ -89,7 +89,7 @@ namespace Input
         {
             var Key = Keys[key.Index];
             for (int c = 0; c < Key.Cuts.Length; c++)
-                data = data.Replace(Key.Cuts[c], $"<b><gradient=Polar>{Key.Cuts[c].ToUpper()}</gradient></b>");
+                data = data.Replace(Key.Cuts[c], $"<b><gradient=Polar>{Key.Cuts[c].ToUpper()}</gradient></b>", StringComparison.OrdinalIgnoreCase);
 
             var index = 0;
             if (Clips.Length > 1)
