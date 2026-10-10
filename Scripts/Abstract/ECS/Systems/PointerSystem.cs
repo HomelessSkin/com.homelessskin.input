@@ -200,7 +200,7 @@ namespace Input
             Prev = Now;
             Now = state;
 
-            if (Settings.LogStates)
+            if (Settings && Settings.LogStates)
                 Log.Info(this, $"{state}");
         }
         protected virtual void UIAction()

@@ -4,7 +4,8 @@ using UnityEngine;
 
 namespace Input
 {
-    public abstract class PointerSettings : ScriptableSettings
+    [CreateAssetMenu(fileName = "Pointer", menuName = "Input/Pointer")]
+    public class PointerSettings : ScriptableSettings
     {
         public bool LogActivity = false;
         public bool LogActions = false;
