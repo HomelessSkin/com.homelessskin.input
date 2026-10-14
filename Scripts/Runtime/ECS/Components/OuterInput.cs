@@ -34,7 +34,9 @@ namespace Input
             Title = title;
             Message = message;
         }
-        public OuterInput(OuterInput input)
+
+        public OuterInput Clone() => new OuterInput(this);
+        OuterInput(OuterInput input)
         {
             Title = input.Title;
             ID = input.ID;

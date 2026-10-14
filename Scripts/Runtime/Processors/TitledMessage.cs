@@ -49,7 +49,7 @@ namespace Whisper
         {
             var message = data.Trim().ToLower();
 
-            var input = new OuterInput(Input);
+            var input = Input.Clone();
             input.Message = data.Replace(Title.ToLower(), "").Trim();
 
             Sys.Add_M(input, World.DefaultGameObjectInjectionWorld.EntityManager);

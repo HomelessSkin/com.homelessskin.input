@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Text.RegularExpressions;
 
 using Core;
 
@@ -89,7 +90,16 @@ namespace Input
         {
             var Key = Keys[key.Index];
             for (int c = 0; c < Key.Cuts.Length; c++)
-                data = data.Replace(Key.Cuts[c], $"<b><gradient=Polar>{Key.Cuts[c].ToUpper()}</gradient></b>", StringComparison.OrdinalIgnoreCase);
+            {
+                var pattern = $@"(?<!\w){Regex.Escape(Key.Cuts[c])}(?!\w)";
+
+                data = Regex.Replace(
+                    data,
+                    pattern,
+                    m => $"<b><gradient=Polar>{m.Value.ToUpper()}</gradient></b>",
+                    RegexOptions.IgnoreCase
+                );
+            }
 
             var index = 0;
             if (Clips.Length > 1)
@@ -98,7 +108,7 @@ namespace Input
             var clip = new Clip(Clips[index]);
             clip.Path = Path.Combine("file://", Application.persistentDataPath, "Input/Sound Alerts/", Folder, clip.Path + ".mp3");
 
-            var input = new OuterInput(Input);
+            var input = Input.Clone();
             input.Message = JsonUtility.ToJson(clip);
 
             Sys.Add_M(input, World.DefaultGameObjectInjectionWorld.EntityManager);
