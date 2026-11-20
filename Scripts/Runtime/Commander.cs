@@ -18,7 +18,7 @@ namespace Input
     public class Commander : ResourceLoader
     {
         [Space]
-        [SerializeField] string JSONFolder = "/Input";
+        [SerializeField] string JSONFolder = "Input";
 
         [Space]
         [SerializeField] Processor[] Processors;
@@ -33,7 +33,19 @@ namespace Input
 
         void Start()
         {
-            ReloadCommands();
+            LoadCommands();
+
+            var allCommands = new AllCommands();
+            for (int c = 0; c < Commands.Count; c++)
+                if (Commands[c].IsPublic)
+                {
+                    var phrases = Commands[c].GetPhrases();
+                    if (phrases != null)
+                        allCommands.Phrases.AddRange(phrases);
+                }
+
+            var path = Path.Combine(Application.persistentDataPath, JSONFolder);
+            File.WriteAllText(Path.Combine(path, "AllCommands.json"), JsonUtility.ToJson(allCommands, true));
         }
         void OnDestroy()
         {
@@ -41,7 +53,7 @@ namespace Input
                 Keys.Dispose();
         }
 
-        public async void ReloadCommands()
+        public async void LoadCommands()
         {
             Index = 0;
 
@@ -53,7 +65,6 @@ namespace Input
             Commands.Clear();
 
             var path = Path.Combine(Application.persistentDataPath, JSONFolder);
-            var allCommands = new AllCommands();
             var folders = new List<string>();
             for (int p = 0; p < Processors.Length; p++)
             {
@@ -73,7 +84,7 @@ namespace Input
                         continue;
                     }
 
-                    var files = Directory.GetFiles(folder, "*.json");
+                    var files = Directory.GetFiles(folder, "*.json", SearchOption.AllDirectories);
                     if (files == null || files.Length == 0)
                         continue;
 
@@ -83,31 +94,8 @@ namespace Input
                 }
             }
 
-            File.WriteAllText(Path.Combine(path, "AllCommands.json"), JsonUtility.ToJson(allCommands, true));
-
-            async Task AddCommand(Command command)
-            {
-                await Task.Delay(32);
-
-                var keys = command.GetKeys(Index++);
-                if (keys != null)
-                    Keys.AddRange(keys);
-
-                if (command.IsPublic)
-                {
-                    var phrases = command.GetPhrases();
-                    if (phrases != null)
-                        allCommands.Phrases.AddRange(phrases);
-                }
-
-                Commands.Add(command);
-
-                Log.Info(this, $"Added Command of Type: {command.GetType().FullName}");
-                Log.Object(this, command);
-            }
             async Task<Command> LoadCommand(string file, Type type)
             {
-
                 var text = await File.ReadAllTextAsync(file);
                 if (!string.IsNullOrEmpty(text))
                 {
@@ -119,6 +107,20 @@ namespace Input
                 return null;
             }
         }
+        public async Task AddCommand(Command command)
+        {
+            await Task.Delay(32);
+
+            var keys = command.GetKeys(Index++);
+            if (keys != null)
+                Keys.AddRange(keys);
+
+            Commands.Add(command);
+
+            Log.Info(this, $"Added Command of Type: {command.GetType().FullName}");
+            Log.Object(this, command);
+        }
+
         public Command.Response Process(ref OuterInput input) => Process(ref input.Message, false);
         public Command.Response Process(ref string line, bool isInternal = true)
         {
