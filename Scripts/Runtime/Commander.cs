@@ -31,9 +31,9 @@ namespace Input
         [Space]
         [SerializeField] string[] Trimming;
 
-        void Start()
+        async void Start()
         {
-            LoadCommands();
+            await LoadCommands();
 
             var allCommands = new AllCommands();
             for (int c = 0; c < Commands.Count; c++)
@@ -53,7 +53,7 @@ namespace Input
                 Keys.Dispose();
         }
 
-        public async void LoadCommands()
+        public async Task LoadCommands()
         {
             Index = 0;
 
